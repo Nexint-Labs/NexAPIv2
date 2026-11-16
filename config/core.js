@@ -7,4 +7,7 @@ module.exports = {
         minute: "numeric",
         second: "numeric",
     },
+    verbose: true,
+    frameVer: "0.0.0",
+    frameID: "1",
 }
