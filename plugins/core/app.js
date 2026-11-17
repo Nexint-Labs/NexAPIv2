@@ -6,7 +6,7 @@ module.exports = {
         // Get the slash directory?
         app.get('/', (req, res) => {
             return res.json({
-                status: "Loaded."
+                status: "Welcome to the Nexint API!"
             })
         });
     }

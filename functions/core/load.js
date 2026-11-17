@@ -22,11 +22,12 @@ const load = async function (dir) {
             if ('execute' in plugin) {
                 try {
                     await plugin.execute();
-                    if(verbose){
+                    if (verbose) {
                         log("INFO", `Loaded file: ${path.join(dir, file)}`)
                     }
-                } catch (error){
+                } catch (error) {
                     log("ERROR", "Failed to load files.")
+                    log("ERROR", `Problematic file: ${path.join(dir, file)}`)
                     throw new Error(error);
                 }
             }

@@ -5,7 +5,7 @@ if (env === undefined) {
     throw new Error("No env file exists lol please make it :)");
 };
 
-// Load Critical Configs
+// Load configs (that actually matter)
 const { frameVer } = require('#config/core');
 const { log } = require('#functions/core/log');
 
@@ -25,7 +25,7 @@ log("INFO", "Starting Server");
 // Make sure directories exist lol
 const fs = require('node:fs');
 const path = require('path');
-const dirs = ["plugins", "preload", "console"];
+const dirs = ["plugins", "preload", "console", "databases"];
 dirs.forEach((dir) => {
     if (!fs.existsSync(dir)) {
         log("INFO", `Creating directory: ${dir}`);
@@ -45,26 +45,6 @@ const wss = new WebSocket.Server({ server });
 
 // Use express.json
 app.use(express.json());
-
-// Connection event handler
-wss.on('connection', (ws) => {
-    console.log('New client connected');
-
-    // Send a welcome message to the client
-    ws.send('Welcome to the WebSocket server!');
-
-    // Message event handler
-    ws.on('message', (message) => {
-        console.log(`Received: ${message}`);
-        // Echo the message back to the client
-        ws.send(`Server received: ${message}`);
-    });
-
-    // Close event handler
-    ws.on('close', () => {
-        console.log('Client disconnected');
-    });
-});
 
 // Export the app and wss
 module.exports = {

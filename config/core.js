@@ -1,4 +1,3 @@
-
 const date = new Date();
 
 module.exports = {
@@ -8,6 +7,6 @@ module.exports = {
         second: "numeric",
     },
     verbose: true,
-    frameVer: "0.0.0",
-    frameID: "1",
+    frameVer: "0.0.0", // Framework version
+    frameID: "1", // Framework version ID
 }
