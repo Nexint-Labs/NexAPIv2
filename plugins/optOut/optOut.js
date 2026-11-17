@@ -1,4 +1,4 @@
-const { app } = require(`#index`);
+const { app } = require("#apps/web");
 
 module.exports = {
     async execute() {

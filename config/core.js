@@ -7,6 +7,8 @@ module.exports = {
         second: "numeric",
     },
     verbose: true,
+    autoUpdate: false,
     frameVer: "0.0.0", // Framework version
-    frameID: "1", // Framework version ID
+    frameID: 1, // Framework version ID
+    updateURL: "https://github.com/Nexint-Labs/NexAPIv2",
 }

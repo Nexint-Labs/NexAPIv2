@@ -1,4 +1,4 @@
-const { wss } = require(`#index`);
+const { wss } = require("#apps/web");
 
 module.exports = {
     async execute() {

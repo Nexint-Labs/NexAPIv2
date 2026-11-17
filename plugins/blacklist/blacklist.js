@@ -1,10 +1,10 @@
-const { app } = require(`#index`);
 const express = require("express");
 const bodyParser = require('body-parser');
 const { blacklist } = require("#preload/db/analytics");
 const { analytics } = require("#preload/db/analytics");
 const { token } = require("#config/api");
 const { addBlacklist, delBlacklist } = require("#functions/dbs/blacklist/handleBlacklist");
+const { app } = require("#apps/web");
 const router = express.Router()
 const jsonParser = bodyParser.json()
 

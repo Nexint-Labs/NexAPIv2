@@ -48,3 +48,5 @@ npm start
 ## Why so restrictive?
 
 This program is still a WIP.
+
+This program also acts as the fundamental base for all things Nexint.
