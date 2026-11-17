@@ -27,11 +27,6 @@ module.exports = {
         }
     },
     async close() {
-        try {
-            server.close();
-        } catch (error) {
-            log("ERROR", "Could not close server.")
-            console.error(error)
-        }
+        await server.close();
     }
 }

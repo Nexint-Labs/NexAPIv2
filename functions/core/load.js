@@ -1,7 +1,7 @@
 const fs = require("node:fs");
 const path = require('path');
 const { log } = require("#functions/core/log");
-const { verbose } = require("#config/core");
+const { verbose } = require("#config/core/core");
 
 
 /**
@@ -122,7 +122,10 @@ const close = async function (dir) {
             const app = require(path.join(process.cwd(), dir, file));
             if ('close' in app) {
                 try {
-                    app.close()
+                    await app.close()
+                    if (verbose) {
+                        log("INFO", `Closed file: ${path.join(dir, file)}`)
+                    }
                 } catch (error) {
                     log("ERROR", "Failed to close apps.")
                     log("ERROR", `Problematic file: ${path.join(dir, file)}`)

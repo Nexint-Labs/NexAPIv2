@@ -83,6 +83,9 @@ module.exports = {
         }
 
         await marryDB.sync();
+    },
+    async close(){
+        await marryDB.close();
     }
 }
 

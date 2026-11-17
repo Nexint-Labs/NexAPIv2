@@ -4,9 +4,13 @@ const { restart } = require('../../config.js');
 const { helpMenu, readline, spawn, exitHandler, server } = require('../../index.js');
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 */
+const { restart } = require("#config/core/core");
 const { date } = require("#functions/core/date");
-const { loadHelp, close } = require("#functions/core/load");
+const delay = require("#functions/core/delay");
+const { loadHelp, load, close } = require("#functions/core/load");
 const { log } = require("#functions/core/log");
+const { gracefulShutdown } = require("#index");
+const { spawn } = require('child_process');
 
 module.exports = {
     // Example of a help menu given by the bot.
@@ -79,30 +83,32 @@ module.exports = {
                 return true;
             case "/end":
             case "/stop":
-                log("INFO", "Closing all apps...")
-                await close("apps");
-                log("INFO", "Shutting down.")
-                process.exit(0)
-
-            /*
+                await gracefulShutdown("Console // Shutdown", true)
+                return false; // This should not run, but like
             case "/rs":
             case "/restart":
-                console.log("[" + DateFormatter.format(Date.now()) + '] [INFO] Restarting bot.');
-                console.log("[" + DateFormatter.format(Date.now()) + '] [INFO] Closing frontend.');
-                server.close();
-                console.log("[" + DateFormatter.format(Date.now()) + '] [INFO] Closing bot connections.');
-                console.log("[" + DateFormatter.format(Date.now()) + '] [INFO] Closing console access.');
-                readline.close();
-                console.log("[" + DateFormatter.format(Date.now()) + '] [INFO] Stopping process.');
+                await gracefulShutdown("Console // Restart", false)
                 const child = spawn(restart, {
                     detatched: true,
                     shell: true,
                     stdio: 'ignore'
                 })
                 child.unref()
-                await exitHandler();
+                await delay(1000)
+                process.exit(0);
+            case "/reload":
+            case "/refresh":
+                
+                log("INFO", "Reloading...")
+                // Closes apps and plugins
+                await close("apps");
+                await close("plugins");
+                // Load apps and plugins
+                await load("plugins");
+                await load("apps");
+                log("INFO", "Reload complete!")
+                log("WARN", "Note: Reloading isn't exactly a supported operation...")
                 return true;
-                */
             default:
                 return false;
         }

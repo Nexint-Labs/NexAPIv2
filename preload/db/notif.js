@@ -66,6 +66,9 @@ module.exports = {
         await devNotify.sync();
         await userNotify.sync();
         await botNotify.sync();
+    },
+    async close(){
+        await notifyDB.close();
     }
 }
 

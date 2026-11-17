@@ -6,9 +6,10 @@ if (env === undefined) {
 };
 
 // Load configs (that actually matter)
-const { frameVer, autoUpdate, frameID } = require('#config/core');
-const { load, loadConsole } = require('#functions/core/load');
+const { frameVer, autoUpdate, frameID, updateSource, updateURL } = require('#config/core/core');
+const { load, loadConsole, close } = require('#functions/core/load');
 const { log } = require('#functions/core/log');
+const delay = require("#functions/core/delay");
 
 // Start loading
 const startLoad = Date.now();
@@ -38,18 +39,26 @@ dirs.forEach((dir) => {
 const readline = require('node:readline');
 const rl = readline.createInterface({
     input: process.stdin,
+    output: process.stdout
 });
 const prompt = (query) => new Promise((resolve) => rl.question(query, resolve));
+
+// Windows specific patch im ticked off bro
+// Screw you microsoft :sob:
+if (process.platform === "win32") {
+    rl.on("SIGINT", function () {
+        process.emit("SIGINT");
+    });
+}
 
 // Is the console open?
 let consoleOpen = true;
 
 // Update Checking
-const { updateURL } = require('#config/core');
 const { date } = require('#functions/core/date');
 const getUpdateVersion = async function () {
     try {
-        const update = await fetch(updateURL);
+        const update = await fetch(updateSource);
         const tmp = await update.text();
         const version = Number(tmp)
         if (!Number.isNaN(version)) {
@@ -65,34 +74,62 @@ const getUpdateVersion = async function () {
         return 0;
     }
 };
-
-
 const updateCheck = async function () {
     let latestVersion = await getUpdateVersion();
-    
-	if (frameID < latestVersion) {
+
+    if (frameID < latestVersion) {
         log("WARN", `You're running an outdated version of this bot! (You are ${latestVersion - frameID} commits behind)`)
-        log("WARN", `Update now at ${src} to make sure that your bot has the latest security fixes!`)
-		if ((latestVersion - frameID) >= 5) {
+        log("WARN", `Update now at ${updateURL} to make sure that your bot has the latest security fixes!`)
+        if ((latestVersion - frameID) >= 5) {
             log(`You are over 5 commits behind. Update to the latest version as soon as possible.`)
-		}
-	} else if (latestVersion == 0) {
+        }
+    } else if (latestVersion == 0) {
         log("WARN", "Update systems seem to be failing.")
-	} else if (frameID > latestVersion) {
+    } else if (frameID > latestVersion) {
         log("WARN", `You're running an experimental version of this bot! (You are ${frameID - latestVersion} commits ahead)`)
         log("WARN", `Here be dragons!~`)
-	} else {
+    } else {
         log("INFO", `You're running the latest version of this bot!`)
-	}
+    }
+}
+
+/**
+ * Graceful Shutdown of bot
+ * Exit: Determines if the process exits immediately or not.
+ * @param {String} cause 
+ * @param {Boolean} exit 
+ */
+const gracefulShutdown = async function (cause, exit) {
+    log("INFO", `\x1b[36m--------------------- Nex ${date.getFullYear()} ---------------------\x1b[0m`)
+    log("INFO", `Shutdown triggered by: ${cause}`)
+    log("INFO", "Closing all apps...")
+    await close("apps");
+    await close("plugins");
+    await close("preload");
+    log("INFO", "Shutting down.")
+    log("INFO", `\x1b[36m----------------------------------------------------\x1b[0m`)
+    if (exit) {
+        process.exit(0);
+    }
 }
 
 // Export the app and wss
 module.exports = {
     consoleOpen,
     startLoad,
+    readline: rl,
     sourceDir: __dirname,
     getUpdateVersion,
+    gracefulShutdown
 }
+
+// Sigint / Sigterm (real)
+process.on('SIGINT', async () => {
+    await gracefulShutdown("Ctrl-C", true)
+})
+process.on('SIGTERM', async () => {
+    await gracefulShutdown("OS Termination", true)
+})
 
 /**
  * Main function
@@ -109,11 +146,11 @@ const main = async () => {
     // This makes my API super modular :)
     await load("apps");
 
-    log("INFO", '\x1b[36m----------------------------------------------------\x1b[0m');
+    log("INFO", `\x1b[36m--------------------- Nex ${date.getFullYear()} ---------------------\x1b[0m`)
     log("INFO", "             Welcome to Nexint's backend!             ");
     log("INFO", `             You're running version: ${frameVer}             `);
     log("INFO", "        Stay up to date for the best features.        ");
-    log("INFO", `\x1b[36m--------------------- Nex ${date.getFullYear()} ---------------------\x1b[0m`)
+    log("INFO", '\x1b[36m----------------------------------------------------\x1b[0m');
     log("INFO", `Done in ${(Date.now() - startLoad) / 1000} seconds!`)
 
     await updateCheck()

@@ -25,4 +25,7 @@ module.exports = {
     async execute() {
         await optOut.sync();
     },
+    async close(){
+        await optOutDb.close();
+    }
 };

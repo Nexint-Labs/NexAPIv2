@@ -52,4 +52,7 @@ module.exports = {
         await action.sync();
         await notify.sync();
     },
+    async close(){
+        await fundb.close();
+    }
 };

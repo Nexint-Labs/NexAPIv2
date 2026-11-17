@@ -137,4 +137,7 @@ module.exports = {
         await items.sync();
         await multi.sync();
     },
+    async close(){
+        await currency.close();
+    }
 };

@@ -29,5 +29,8 @@ module.exports = {
     analytics,
     async execute(){
         blacklist.sync();
+    },
+    async close(){
+        await analytics.close();
     }
 }
