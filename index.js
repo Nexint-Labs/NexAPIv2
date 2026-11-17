@@ -6,7 +6,7 @@ if (env === undefined) {
 };
 
 // Load configs (that actually matter)
-const { frameVer, autoUpdate, frameID, updateSource, updateURL } = require('#config/core/core');
+const { frameVer, autoUpdate, frameID, updateSource, updateURL, frameName } = require('#config/core/core');
 const { load, loadConsole, close } = require('#functions/core/load');
 const { log } = require('#functions/core/log');
 const delay = require("#functions/core/delay");
@@ -78,18 +78,18 @@ const updateCheck = async function () {
     let latestVersion = await getUpdateVersion();
 
     if (frameID < latestVersion) {
-        log("WARN", `You're running an outdated version of this bot! (You are ${latestVersion - frameID} commits behind)`)
-        log("WARN", `Update now at ${updateURL} to make sure that your bot has the latest security fixes!`)
+        log("WARN", `You're running an outdated version of ${frameName}! (You are ${latestVersion - frameID} commits behind)`)
+        log("WARN", `Update now at ${updateURL} to make sure that ${frameName} has the latest security fixes!`)
         if ((latestVersion - frameID) >= 5) {
             log(`You are over 5 commits behind. Update to the latest version as soon as possible.`)
         }
     } else if (latestVersion == 0) {
         log("WARN", "Update systems seem to be failing.")
     } else if (frameID > latestVersion) {
-        log("WARN", `You're running an experimental version of this bot! (You are ${frameID - latestVersion} commits ahead)`)
+        log("WARN", `You're running an experimental version of ${frameName}! (You are ${frameID - latestVersion} commits ahead)`)
         log("WARN", `Here be dragons!~`)
     } else {
-        log("INFO", `You're running the latest version of this bot!`)
+        log("INFO", `You're running the latest version of ${frameName}!`)
     }
 }
 
@@ -147,7 +147,7 @@ const main = async () => {
     await load("apps");
 
     log("INFO", `\x1b[36m--------------------- Nex ${date.getFullYear()} ---------------------\x1b[0m`)
-    log("INFO", "             Welcome to Nexint's backend!             ");
+    log("INFO", `                 Welcome to ${frameName}!                 `);
     log("INFO", `             You're running version: ${frameVer}             `);
     log("INFO", "        Stay up to date for the best features.        ");
     log("INFO", '\x1b[36m----------------------------------------------------\x1b[0m');

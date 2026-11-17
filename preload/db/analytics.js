@@ -7,7 +7,7 @@ const analytics = new Sequelize('database', 'user', 'password', {
 	dialect: 'sqlite',
 	logging: null,
 	// SQLite only
-	storage: 'analytics.sqlite',
+	storage: 'databases/analytics.sqlite',
 });
 
 // blacklist lol
@@ -24,11 +24,21 @@ const blacklist = analytics.define('blacklist', {
 	},
 });
 
+// blacklist lol
+const advert = analytics.define('advert', {
+	name: {
+		type: Sequelize.STRING,
+		unique: true,
+	},
+});
+
 module.exports = {
     blacklist,
+	advert,
     analytics,
     async execute(){
         blacklist.sync();
+		advert.sync();
     },
     async close(){
         await analytics.close();

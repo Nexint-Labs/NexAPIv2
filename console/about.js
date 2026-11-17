@@ -1,5 +1,5 @@
 const { wss } = require('#apps/web');
-const { frameName, frameVer } = require('#config/core/core');
+const { frameName, frameVer, frameID } = require('#config/core/core');
 const { pluginName, pluginVer } = require('#config/cosmetic/config');
 const { date } = require('#functions/core/date');
 const { log } = require('#functions/core/log');
@@ -29,16 +29,16 @@ module.exports = {
                 switch (print) {
                     case "v":
                     case 'version':
-                        let latestVersion = getUpdateVersion();
+                        let latestVersion = await getUpdateVersion();
                         log("INFO", "Printing the version...")
                         log("INFO", `${pluginName} Version: ${pluginVer}`)
                         log("INFO", `${frameName} Version: ${frameVer} (Version ID: ${frameID}) / Latest version ID: ${latestVersion}.`)
-                        if (latestVersion > versionID) {
-                            log("INFO", `${latestVersion - versionID} commits behind.`)
+                        if (latestVersion > frameID) {
+                            log("INFO", `${latestVersion - frameID} commits behind.`)
                         } else if (latestVersion == 0) {
                             log("WARN", `Updates may or may not be working.`)
-                        } else if (latestVersion < versionID) {
-                            log("INFO", `${versionID - latestVersion} commits ahead.`)
+                        } else if (latestVersion < frameID) {
+                            log("INFO", `${frameID - latestVersion} commits ahead.`)
                         } else {
                             log("WARN", `Running the latest version.`)
                         }

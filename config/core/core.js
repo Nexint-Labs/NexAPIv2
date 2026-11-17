@@ -9,7 +9,7 @@ module.exports = {
     },
     verbose: true, // Extra Logging Info
     autoUpdate: false,
-    frameName: "NexAPI", // Unified Framework Name
+    frameName: "Prism", // Unified Framework Name
     frameVer: "0.7.0-dev", // Unified Framework version
     frameID: 13, // Framework version ID
     updateURL: "https://github.com/Nexint-Labs/NexAPIv2/",
