@@ -14,6 +14,7 @@ const currency = new Sequelize('database', 'user', 'password', {
 const balance = currency.define('balance', {
     userId: {
         type: Sequelize.STRING,
+        unique: true,
     },
     name: {
         type: Sequelize.STRING,
@@ -29,6 +30,7 @@ const balance = currency.define('balance', {
 const bank = currency.define('bank', {
     userId: {
         type: Sequelize.STRING,
+        unique: true,
     },
     name: {
         type: Sequelize.STRING,
@@ -44,6 +46,7 @@ const bank = currency.define('bank', {
 const miscinfo = currency.define('miscinfo', {
     userId: {
         type: Sequelize.STRING,
+        unique: true,
     },
     name: {
         type: Sequelize.STRING,
@@ -68,6 +71,7 @@ const miscinfo = currency.define('miscinfo', {
 const work = currency.define('work', {
     userId: {
         type: Sequelize.STRING,
+        unique: true,
     },
     name: {
         type: Sequelize.STRING,
@@ -96,6 +100,11 @@ const items = currency.define('items', {
     value: {
         type: Sequelize.DOUBLE,
     },
+}, {
+    indexes: [{
+        unique: true,
+        fields: ["userId", "name"]
+    }]
 });
 
 // Placeholder alias lol
@@ -117,6 +126,11 @@ const multi = currency.define('multi', {
     expire: {
         type: Sequelize.DOUBLE,
     },
+}, {
+    indexes: [{
+        unique: true,
+        fields: ["userId", "name"]
+    }]
 });
 
 module.exports = {

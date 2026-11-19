@@ -32,13 +32,56 @@ const advert = analytics.define('advert', {
 	},
 });
 
+// Databases used.
+const usage = analytics.define('commands', {
+    type: {
+        type: Sequelize.STRING,
+    },
+    value: {
+        type: Sequelize.DOUBLE,
+    },
+});
+
+const userinfo = analytics.define('userinfo', {
+    userId: {
+        type: Sequelize.STRING,
+    },
+    name: {
+        type: Sequelize.STRING,
+    },
+    value: {
+        type: Sequelize.DOUBLE,
+    },
+    registerDate: {
+        type: Sequelize.STRING,
+    },
+    lastUsed: {
+        type: Sequelize.STRING,
+    },
+});
+
+const cmdDate = analytics.define('cmddate', {
+    type: {
+        type: Sequelize.STRING,
+    },
+    date: {
+        type: Sequelize.STRING,
+    },
+});
+
 module.exports = {
     blacklist,
 	advert,
+	usage,
+	userinfo,
+	cmdDate,
     analytics,
     async execute(){
         blacklist.sync();
 		advert.sync();
+		userinfo.sync();
+		usage.sync();
+		cmdDate.sync();
     },
     async close(){
         await analytics.close();

@@ -1,3 +1,4 @@
+const { log } = require("#functions/core/log");
 const { analytics, blacklist } = require("#preload/db/analytics");
 
 /**
@@ -20,16 +21,17 @@ const addBlacklist = async function (userId, name) {
                 default: {
                     user: name,
                     timeStamp: Math.round(Date.now() / 1000),
-                }
-            },
-                { transaction: t })
+                },
+                transaction: t
+            })
 
-            if (created) {
+            if (!created) {
                 return {
                     error: true,
                     status: 409,
-                    title: "Already blacklisted.",
+                    title: "Conflict",
                     desc: `${name} is already blacklisted.`,
+                    content: user,
                 };
             }
 
@@ -42,8 +44,8 @@ const addBlacklist = async function (userId, name) {
                     where: {
                         userid: userId,
                     },
+                    transaction: t
                 },
-                { transaction: t }
             );
 
             return user;
@@ -56,25 +58,28 @@ const addBlacklist = async function (userId, name) {
                 error: true,
                 status: result.status,
                 title: result.title,
-                desc: result.desc
+                desc: result.desc,
+                content: result.content,
             }
         }
         return {
             error: false,
             status: 201,
             title: "Created Blacklist.",
-            desc: `${name} is now blacklisted.`
+            desc: `${name} is now blacklisted.`,
+            content: result,
         }
     } catch (error) {
 
         // Some serious error has occured.
-        log("ERROR", "A server error has happened while trying to opt people out.")
+        log("ERROR", "A server error has happened while trying to add people to the blacklist.")
         console.error(error)
         return {
             error: true,
             status: 500,
             title: "Server Error",
-            desc: "The server in question has faced a serious server error."
+            desc: "The server in question has faced a serious server error.",
+            content: null
         }
     }
 }
@@ -93,48 +98,91 @@ const delBlacklist = async function (userId, name) {
                 where: {
                     userid: userId,
                 },
+                transaction: t
             })
             if (!rowCount) {
                 return {
                     error: true,
-                    status: 409,
-                    title: "Conflict",
+                    status: 410,
+                    title: "Gone",
                     desc: `${name} is not blacklisted.`,
+                    content: {
+                        userid: userId,
+                        user: name
+                    },
                 }
+            }
+            return {
+                userid: userId,
+                user: name
             }
         })
 
         if (result.error) {
-            
+
             // So JS doesnt get mad at me lol
             return {
                 error: true,
                 status: result.status,
                 title: result.title,
-                desc: result.desc
+                desc: result.desc,
+                content: result.content,
             }
         }
-        
+
         return {
             error: false,
             status: 200,
             title: "Deleted Blacklist.",
-            desc: `${name} has been removed from the blacklist.`
+            desc: `${name} has been removed from the blacklist.`,
+            content: result,
         }
     } catch (error) {
         // Some error has occured lol
-        log("ERROR", "A server error has happened while trying to opt people out.")
+        log("ERROR", "A server error has happened while trying to remove someone from a blacklist.")
         console.error(error)
         return {
             error: true,
             status: 500,
             title: "Server Error",
-            desc: "The server in question has faced a serious server error."
+            desc: "The server in question has faced a serious server error.",
+            content: null
         }
+    }
+}
+
+/**
+ * Gets all blacklists.
+ * @returns 
+ */
+const getBlacklist = async function () {
+    try {
+        const blacklists = await blacklist.findAll();
+
+        return {
+            error: false,
+            status: 200,
+            title: "Blacklist List",
+            desc: `List of all blacklists:`,
+            content: blacklists
+        }
+    } catch (error) {
+        // Some error has occured lol
+        log("ERROR", "A server error has happened while trying to query blacklists..")
+        console.error(error)
+        return {
+            error: true,
+            status: 500,
+            title: "Server Error",
+            desc: "The server in question has faced a serious server error.",
+            content: null,
+        }
+
     }
 }
 
 module.exports = {
     addBlacklist,
-    delBlacklist
+    delBlacklist,
+    getBlacklist,
 }

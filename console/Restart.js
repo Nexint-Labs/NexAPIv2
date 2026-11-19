@@ -4,7 +4,8 @@ const { restart } = require('../../config.js');
 const { helpMenu, readline, spawn, exitHandler, server } = require('../../index.js');
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 */
-const { restart } = require("#config/core/core");
+const { restart, frameName } = require("#config/core/core");
+const { pluginName } = require("#config/cosmetic/config");
 const { date } = require("#functions/core/date");
 const delay = require("#functions/core/delay");
 const { loadHelp, load, close } = require("#functions/core/load");
@@ -25,8 +26,9 @@ module.exports = {
             '/info (page) - Opens a neat info menu!',
             'This function can\'t be expanded upon by other plugins.',
             '/reload - Mirror of /refresh',
+            '/refresh - Refreshes commands, etc.',
             '/restart - Restarts the bot. Recommended when updating.',
-            '/r - Mirror of /restart',
+            '/rs - Mirror of /restart',
             '/stop - Closes bot.',
             '/end - Mirror of /stop.',
         ];
@@ -63,9 +65,19 @@ module.exports = {
                     'Version control:',
                     'The first number (X.0.0) is the major release.',
                     'The second number (0.X.0) is the minor release.',
-                    'The third number (0.0.X) is the build #.',
+                    'The third number (0.0.X) is the patch #.',
+                    'Breaking changes may occur between Prism 0.x releases.',
+                    'Compatibility is not guaranteed until v1.0.0.',
                     'Built-in plugins aside from "built-in" are typically',
                     'not updated as often, and may be unstable.',
+                    'What means what?',
+                    `${frameName} version is the version of the NodeJS framework.`,
+                    `${pluginName} version is the version of the plugins / deployment.`,
+                    'Dev is the dev instance, prod is the prod instance.',
+                    'Disclaimers:',
+                    'Third party plugins are not guaranteed to be supported.',
+                    'Prism is in active development and may introduce breaking changes.',
+                    'Have fun running this! - Nexint',
                 ];
                 if (command.split(" ")[1] != undefined) {
                     info = Number(parseInt(command.split(" ")[1].toLowerCase(), 10));
@@ -107,7 +119,7 @@ module.exports = {
                 await load("plugins");
                 await load("apps");
                 log("INFO", "Reload complete!")
-                log("WARN", "Note: Reloading isn't exactly a supported operation...")
+                log("WARN", "Note: Reloading is unstable.")
                 return true;
             default:
                 return false;

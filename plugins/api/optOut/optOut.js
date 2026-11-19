@@ -1,37 +1,67 @@
 const express = require("express");
 const bodyParser = require('body-parser');
-const { blacklist } = require("#preload/db/analytics");
-const { analytics } = require("#preload/db/analytics");
 const { token } = require("#config/core/api");
-const { addBlacklist, delBlacklist } = require("#functions/dbs/blacklist/handleBlacklist");
 const { app } = require("#apps/web");
+const { getOptOut, addOptOut, delOptOut } = require("#functions/dbs/optOut/optOutUser");
 const router = express.Router()
 const jsonParser = bodyParser.json()
 
 router.get('/', jsonParser, async (req, res) => {
-
-    // Find all blacklists
-    const listBlacklist = await blacklist.findAll();
-    const getBlacklist = [];
-    const getBlacklistName = [];
-    listBlacklist.forEach(async id => {
-        getBlacklist.push(id.userid);
-        getBlacklistName.push(id.user);
-    })
-
-    // Return the blacklist
     res.json({
-        name: "Blacklist",
-        desc: "Info of the blacklist",
+        name: "Opt Out",
+        desc: "Version info of opt out?",
         content: {
             // 0 means offline, 1 means online
             status: 1,
-            version: 1,
-            blacklist: getBlacklist,
-            blacklistName: getBlacklistName,
+            version: 2,
         },
         refreshDate: Date.now(),
+        error: true,
+    })
+})
+
+router.query('/', jsonParser, async (req, res) => {
+
+    // Get the request
+    let request = req.body;
+
+    // Authenticate?
+    if (request.token != token) {
+        res.status(403).json({
+            error: "Insufficient Permissions",
+            desc: "You are not authenticated",
+            content: null,
+        });
+        return;
+    }
+
+    // See if the user ID even exists
+    const { firstId, secondId } = request;
+    if (!firstId) {
+        res.status(400).json({
+            error: "Malformed Request",
+            desc: "Your request does not contain the required information. (userID)",
+            content: null,
+        })
+        return;
+    }
+
+    // Find all notifications for this user
+    const result = await getOptOut(firstId, secondId);
+
+    // Return the notification list
+    if (result.error) {
+        res.status(result.status).json({
+            error: result.title,
+            desc: result.desc,
+            content: result.content,
+        })
+        return;
+    }
+    res.status(result.status).json({
         error: false,
+        desc: result.desc,
+        content: result.content,
     })
 })
 
@@ -45,6 +75,7 @@ router.post('/', jsonParser, async (req, res) => {
         res.status(403).json({
             error: "Insufficient Permissions",
             desc: "You are not authenticated",
+            content: null,
         });
         return;
     }
@@ -54,21 +85,25 @@ router.post('/', jsonParser, async (req, res) => {
     if (!userId || !name) {
         res.status(400).json({
             error: "Malformed Request",
-            desc: "Your request does not contain the required information. (userID, name)"
+            desc: "Your request does not contain the required information. (userId, name)",
+            content: null,
         })
+        return;
     }
 
-    const result = await addBlacklist(userId, name)
+    const result = await addOptOut(userId, name)
     if (result.error) {
         res.status(result.status).json({
             error: result.title,
             desc: result.desc,
+            content: result.content,
         })
         return;
     }
     res.status(result.status).json({
         error: false,
         desc: result.desc,
+        content: result.content,
     })
     return;
 })
@@ -83,35 +118,40 @@ router.delete('/', jsonParser, async (req, res) => {
         res.status(403).json({
             error: "Insufficient Permissions",
             desc: "You are not authenticated",
+            content: null,
         });
         return;
     }
 
     // See if the user ID even exists
-    const { userId, name } = request;
-    if (!userId || !name) {
+    const { userId } = request;
+    if (!userId) {
         res.status(400).json({
             error: "Malformed Request",
-            desc: "Your request does not contain the required information. (userID)"
+            desc: "Your request does not contain the required information. (userId)",
+            content: null,
         })
+        return;
     }
 
     // Remove the user
-    const result = await delBlacklist(userId, name)
+    const result = await delOptOut(userId)
     if (result.error) {
         res.status(result.status).json({
             error: result.title,
             desc: result.desc,
+            content: result.content,
         })
         return;
     }
     res.status(result.status).json({
         error: false,
         desc: result.desc,
+        content: result.content,
     })
 })
 
-router.mountPath = '/blacklist';
+router.mountPath = '/opt-out';
 
 module.exports = {
     async execute() {

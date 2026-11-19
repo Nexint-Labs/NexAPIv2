@@ -1,26 +1,21 @@
 const express = require("express");
 const bodyParser = require('body-parser');
-const { blacklist } = require("#preload/db/analytics");
-const { analytics } = require("#preload/db/analytics");
 const { token } = require("#config/core/api");
 const { app } = require("#apps/web");
+const { getAdvert, addAdvert, delAdvert } = require("#functions/dbs/advert/handleAdvert");
 const router = express.Router()
 const jsonParser = bodyParser.json()
 
 router.get('/', jsonParser, async (req, res) => {
 
-    // Find all blacklists
-    const listAdvert = await blacklist.findAll();
-    const advert = [];
-    listAdvert.forEach(async ad => {
-        getAdvert.push(ad.name);
-    })
+    // Find all advertisements
+    const listAdvert = await getAdvert();
 
-    // Return the blacklist
+    // Return the advertisement
     res.json({
         name: "Advertising",
         desc: "Info of the advertising list lol",
-        content: advert,
+        content: listAdvert,
         refreshDate: Date.now(),
         error: false,
     })
@@ -36,30 +31,35 @@ router.post('/', jsonParser, async (req, res) => {
         res.status(403).json({
             error: "Insufficient Permissions",
             desc: "You are not authenticated",
+            content: null,
         });
         return;
     }
 
-    // See if the user ID even exists
+    // See if text even exists
     const { text } = request;
     if (text) {
         res.status(400).json({
             error: "Malformed Request",
-            desc: "Your request does not contain the required information. (text)"
+            desc: "Your request does not contain the required information. (text)",
+            content: null,
         })
+        return;
     }
 
-    const result = await addBlacklist(userId, name)
+    const result = await addAdvert(text)
     if (result.error) {
         res.status(result.status).json({
             error: result.title,
             desc: result.desc,
+            content: result.content,
         })
         return;
     }
     res.status(result.status).json({
         error: false,
         desc: result.desc,
+        content: result.content,
     })
     return;
 })
@@ -74,35 +74,40 @@ router.delete('/', jsonParser, async (req, res) => {
         res.status(403).json({
             error: "Insufficient Permissions",
             desc: "You are not authenticated",
+            content: null,
         });
         return;
     }
 
-    // See if the user ID even exists
-    const { userId, name } = request;
-    if (!userId || !name) {
+    // See if text even exists
+    const { text } = request;
+    if (!text) {
         res.status(400).json({
             error: "Malformed Request",
-            desc: "Your request does not contain the required information. (userID)"
+            desc: "Your request does not contain the required information. (text)",
+            content: null,
         })
+        return;
     }
 
-    // Remove the user
-    const result = await delBlacklist(userId, name)
+    // Remove the advertisement
+    const result = await delAdvert(text)
     if (result.error) {
         res.status(result.status).json({
             error: result.title,
             desc: result.desc,
+            content: result.content,
         })
         return;
     }
     res.status(result.status).json({
         error: false,
         desc: result.desc,
+        content: result.content,
     })
 })
 
-router.mountPath = '/blacklist';
+router.mountPath = '/advert';
 
 module.exports = {
     async execute() {

@@ -35,6 +35,7 @@ const action = fundb.define('action', {
         },
     ],
 });
+
 // Opt-out Database
 const notify = fundb.define('notify', {
     userId: {

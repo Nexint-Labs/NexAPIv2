@@ -19,7 +19,7 @@ const load = async function (dir) {
 
             // Execute the plugin?
             const plugin = require(path.join(process.cwd(), dir, file));
-            if ('execute' in plugin) {
+            if ('execute' in plugin && !('data' in plugin)) { // Discord fix lol
                 try {
                     await plugin.execute();
                     if (verbose) {
@@ -37,7 +37,7 @@ const load = async function (dir) {
 
 /**
  * Load console files
- * This runs the execute function.
+ * This runs the console function.
  * @param {String} dir 
  * @param {String} command 
  */

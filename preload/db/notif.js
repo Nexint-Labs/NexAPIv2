@@ -30,7 +30,8 @@ const devNotify = notifyDB.define('devNotify', {
 // This schema defines what happens when a user gets notified.
 const userNotify = notifyDB.define('userNotify', {
     userId: {
-        type: Sequelize.STRING, // User ID ()
+        type: Sequelize.STRING, // User ID (),
+        unique: true,
     },
     date: {
         type: Sequelize.DOUBLE, // when the user read the notif
