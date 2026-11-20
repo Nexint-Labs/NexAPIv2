@@ -200,18 +200,18 @@ const delMisc = async function (userId, name) {
  */
 const getMisc = async function (depth) {
     try {
-        let banks;
+        let misc;
         if (Number.isSafeInteger(depth)) {
-            banks = await miscinfo.findAll({
+            misc = await miscinfo.findAll({
                 order: [
-                    ['value', 'DESC'],
+                    ['level', 'DESC'],
                 ],
                 limit: depth
             });
         } else {
-            banks = await miscinfo.findAll({
+            misc = await miscinfo.findAll({
                 order: [
-                    ['value', 'DESC'],
+                    ['level', 'DESC'],
                 ]
             });
         }
@@ -219,13 +219,13 @@ const getMisc = async function (depth) {
         return {
             error: false,
             status: 200,
-            title: "Bank List",
-            desc: `List of all bank accounts:`,
-            content: banks
+            title: "Misc List",
+            desc: `List of all misc accounts:`,
+            content: misc
         }
     } catch (error) {
         // Some error has occured lol
-        llog.error("A server error has happened while trying to query misc.", error)
+        log.error("A server error has happened while trying to query misc.", error)
         return {
             error: true,
             status: 500,

@@ -21,7 +21,7 @@ module.exports = {
             server.listen(process.env.PORT, () => {
                 log.success(`Listening at port ${process.env.PORT}`);
             });
-        } catch {
+        } catch (error) {
             log.error("Could not open server.", error)
         }
     },
@@ -31,7 +31,7 @@ module.exports = {
             server.listen(process.env.PORT, () => {
                 log.success(`Listening at port ${process.env.PORT}`);
             });
-        } catch {
+        } catch (error) {
             log.error("Could not open server.", error)
         }
     },
