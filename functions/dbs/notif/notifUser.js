@@ -34,7 +34,7 @@ const addNotif = async function (userId, refresh = false, t = null) {
             where: {
                 userId: userId
             },
-            default: {
+            defaults: {
                 date: Date.now()
             },
             transaction: t
@@ -228,6 +228,9 @@ const getNotif = async function (userId, refresh, viewAll = false) {
                 order: [
                     ['date', 'DESC'],
                 ],
+                where: {
+                    userId: userId
+                },
                 transaction: t
             });
 

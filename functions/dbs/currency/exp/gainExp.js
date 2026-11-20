@@ -10,7 +10,7 @@ const expGain = async function (userId, name) {
         const result = await currency.transaction(async t => {
             const misc = await addMisc(userId, name, t);
 
-            if (misc.error) {
+            if (misc.error && misc.status !== 409) {
                 return {
                     error: true,
                     status: misc.status,

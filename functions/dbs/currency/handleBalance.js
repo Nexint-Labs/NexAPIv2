@@ -49,7 +49,7 @@ const addBalance = async function (userId, name, t) {
         // Update the username lol
         await user.update(
             {
-                user: name
+                name: name
             },
             {
                 where: {
@@ -150,7 +150,8 @@ const delBalance = async function (userId, name) {
                 where: {
                     userId: userId,
                 },
-            }, { transaction: t })
+                transaction: t,
+            })
             if (!rowCount) {
                 return {
                     error: true,
@@ -159,14 +160,14 @@ const delBalance = async function (userId, name) {
                     desc: `${name} is not registered.`,
                     content: {
                         userId: userId,
-                        user: name
+                        name: name
                     },
                 }
             }
 
             return {
                 userId: userId,
-                user: name
+                name: name
             }
         })
 
