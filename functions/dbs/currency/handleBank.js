@@ -67,8 +67,8 @@ const addBank = async function (userId, name, t) {
         let [user, created] = await createBank(userId, t)
         if (!created) {
             return {
-                error: true,
-                status: 409,
+                error: false,
+                status: 200,
                 title: "Already created.",
                 desc: `${name} is already registered.`,
                 content: user,
@@ -86,33 +86,21 @@ const addBank = async function (userId, name, t) {
     try {
 
         // Try to create the user
-        const result = await currency.transaction(async t => {
+        const [result, created] = await currency.transaction(async t => {
 
             let [user, created] = await createBank(userId, t)
 
-            if (!created) {
-                return {
-                    error: true,
-                    status: 409,
-                    title: "Already created.",
-                    desc: `${name} is already registered.`,
-                    content: user,
-                };
-            }
-
-            return user;
+            return [user, created];
         });
 
-        if (result.error) {
-
-            // So JS doesnt get mad at me lol
+        if (!created) {
             return {
-                error: true,
-                status: result.status,
-                title: result.title,
-                desc: result.desc,
-                content: result.content,
-            }
+                error: false,
+                status: 200,
+                title: "Already created.",
+                desc: `${name} is already registered.`,
+                content: result,
+            };
         }
         return {
             error: false,

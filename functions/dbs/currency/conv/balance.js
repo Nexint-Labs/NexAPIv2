@@ -10,10 +10,10 @@ const convNameToID = async function (name) {
         if (balanceUser === null) {
 
             return {
-                error: false,
-                status: 200,
-                title: "Balance List",
-                desc: `List of balance accounts:`,
+                error: true,
+                status: 410,
+                title: "Gone",
+                desc: `Balance user does not exist.`,
                 content: null
             }
 

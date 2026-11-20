@@ -57,8 +57,8 @@ const addMisc = async function (userId, name, t) {
         let [user, created] = await createMisc(userId, t)
         if (!created) {
             return {
-                error: true,
-                status: 409,
+                error: false,
+                status: 200,
                 title: "Already created.",
                 desc: `${name} is already registered.`,
                 content: user,
@@ -76,32 +76,22 @@ const addMisc = async function (userId, name, t) {
     try {
 
         // Try to create the user
-        const result = await currency.transaction(async t => {
+        const [result, created] = await currency.transaction(async t => {
             let [user, created] = await createMisc(userId, t)
-
-            if (!created) {
-                return {
-                    error: true,
-                    status: 409,
-                    title: "Already created.",
-                    desc: `${name} is already registered.`,
-                    content: user,
-                };
-            }
-
-            return user;
+            return [user, created];
         });
 
-        if (result.error) {
+        if (!created) {
 
             // So JS doesnt get mad at me lol
+
             return {
-                error: true,
-                status: result.status,
-                title: result.title,
-                desc: result.desc,
-                content: result.content,
-            }
+                error: false,
+                status: 200,
+                title: "Already created.",
+                desc: `${name} is already registered.`,
+                content: result,
+            };
         }
         return {
             error: false,
@@ -114,7 +104,7 @@ const addMisc = async function (userId, name, t) {
 
         // Some serious error has occured.
         log.error("A server error has happened while trying to add people to misc.", error)
-        if(t){
+        if (t) {
             throw new Error("Creating misc failed.")
         }
         return {

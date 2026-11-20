@@ -28,6 +28,7 @@ router.get('/', jsonParser, async (req, res) => {
             status: 1,
             version: 2,
             balance: balance,
+            bank: bank,
         },
         refreshDate: Date.now(),
         error: false,
