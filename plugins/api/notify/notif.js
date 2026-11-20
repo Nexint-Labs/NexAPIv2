@@ -131,6 +131,7 @@ router.delete('/', jsonParser, async (req, res) => {
             desc: "Your request does not contain the required information. (userID, refresh)",
             content: null,
         })
+        return;
     }
 
     // Remove the user
