@@ -101,7 +101,7 @@ module.exports = {
             case "/restart":
                 await gracefulShutdown("Console // Restart", false)
                 const child = spawn(restart, {
-                    detatched: true,
+                    detached: true,
                     shell: true,
                     stdio: 'ignore'
                 })
