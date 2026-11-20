@@ -12,17 +12,16 @@ const { getOptOut } = require("../optOut/optOutUser");
  * @returns 
  */
 const addMisc = async function (userId, name, t) {
-
     const optOut = await getOptOut(userId);
-    if (optOut === true) {
+    if (optOut.content === true) {
         return {
             error: true,
             status: 410,
             title: "Opted out.",
-            desc: `${name} is opted out.`,
+            desc: `${userId} is opted out.`,
             content: null,
         };
-    } else if (optOut === null) {
+    } else if (optOut.content === null) {
         return {
             error: optOut.error,
             status: optOut.status,
@@ -56,7 +55,7 @@ const addMisc = async function (userId, name, t) {
     // Transaction safety, outside try-catch because I want errors to propagate :)
     if (t) {
         let [user, created] = await createMisc(userId, t)
-        if (created) {
+        if (!created) {
             return {
                 error: true,
                 status: 409,
@@ -80,7 +79,7 @@ const addMisc = async function (userId, name, t) {
         const result = await currency.transaction(async t => {
             let [user, created] = await createMisc(userId, t)
 
-            if (created) {
+            if (!created) {
                 return {
                     error: true,
                     status: 409,

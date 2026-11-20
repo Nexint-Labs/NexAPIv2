@@ -11,7 +11,7 @@ const { getOptOut } = require("../optOut/optOutUser");
  */
 const addNotif = async function (userId, refresh = false, t = null) {
     const optOut = await getOptOut(userId);
-    if (optOut === true) {
+    if (optOut.content === true) {
         return {
             error: true,
             status: 410,
@@ -19,7 +19,7 @@ const addNotif = async function (userId, refresh = false, t = null) {
             desc: `${userId} is opted out.`,
             content: null,
         };
-    } else if (optOut === null) {
+    } else if (optOut.content === null) {
         return {
             error: optOut.error,
             status: optOut.status,
@@ -74,7 +74,7 @@ const addNotif = async function (userId, refresh = false, t = null) {
             // idk why im using find or create :sob:
             let [user, created] = await createUser(userId, t)
 
-            if (created) {
+            if (!created) {
                 return {
                     error: true,
                     status: 409,
@@ -193,7 +193,7 @@ const delNotif = async function (userId) {
  */
 const getNotif = async function (userId, refresh, viewAll = false) {
     const optOut = await getOptOut(userId);
-    if (optOut === true) {
+    if (optOut.content === true) {
         return {
             error: true,
             status: 410,
@@ -201,7 +201,7 @@ const getNotif = async function (userId, refresh, viewAll = false) {
             desc: `${userId} is opted out.`,
             content: null,
         };
-    } else if (optOut === null) {
+    } else if (optOut.content === null) {
         return {
             error: optOut.error,
             status: optOut.status,

@@ -11,17 +11,16 @@ const { getOptOut } = require("../optOut/optOutUser");
  * @returns 
  */
 const addBank = async function (userId, name) {
-    
     const optOut = await getOptOut(userId);
-    if (optOut === true) {
+    if (optOut.content === true) {
         return {
             error: true,
             status: 410,
             title: "Opted out.",
-            desc: `${name} is opted out.`,
+            desc: `${userId} is opted out.`,
             content: null,
         };
-    } else if (optOut === null) {
+    } else if (optOut.content === null) {
         return {
             error: optOut.error,
             status: optOut.status,
@@ -30,6 +29,7 @@ const addBank = async function (userId, name) {
             content: null,
         };
     }
+
     try {
 
         // Try to create the user
@@ -48,7 +48,7 @@ const addBank = async function (userId, name) {
                 transaction: t
             })
 
-            if (created) {
+            if (!created) {
                 return {
                     error: true,
                     status: 409,

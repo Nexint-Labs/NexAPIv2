@@ -12,7 +12,7 @@ const { getOptOut } = require("../optOut/optOutUser");
  */
 const addBalance = async function (userId, name) {
     const optOut = await getOptOut(userId);
-    if (optOut === true) {
+    if (optOut.content === true) {
         return {
             error: true,
             status: 410,
@@ -20,7 +20,7 @@ const addBalance = async function (userId, name) {
             desc: `${userId} is opted out.`,
             content: null,
         };
-    } else if (optOut === null) {
+    } else if (optOut.content === null) {
         return {
             error: optOut.error,
             status: optOut.status,
@@ -48,7 +48,7 @@ const addBalance = async function (userId, name) {
                 transaction: t
             })
 
-            if (created) {
+            if (!created) {
                 return {
                     error: true,
                     status: 409,

@@ -10,6 +10,16 @@ const expGain = async function (userId, name) {
         const result = await currency.transaction(async t => {
             const misc = await addMisc(userId, name, t);
 
+            if (misc.error) {
+                return {
+                    error: true,
+                    status: misc.status,
+                    title: misc.title,
+                    desc: misc.desc,
+                    content: misc.content,
+                };
+            }
+
             const user = misc.content
 
             user.exp += xpGained;
@@ -35,14 +45,26 @@ const expGain = async function (userId, name) {
                 {
                     where: {
                         userId: userId,
-                    }, transaction: t 
+                    }, transaction: t
                 },
             );
             return {
+                error: false,
                 user,
                 newLevel
             }
         })
+
+        if (result.error) {
+            return {
+                error: true,
+                status: result.status,
+                title: result.title,
+                desc: result.desc,
+                content: result.content,
+            };
+
+        }
 
         return {
             error: false,

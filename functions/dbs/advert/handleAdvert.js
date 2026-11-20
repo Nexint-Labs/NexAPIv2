@@ -21,7 +21,7 @@ const addAdvert = async function (name) {
                 transaction: t
             })
 
-            if (created) {
+            if (!created) {
                 return {
                     error: true,
                     status: 409,
