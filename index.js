@@ -1,14 +1,14 @@
 // Import the .env lol
 const env = require('dotenv').config({ path: __dirname + '/.env' });
 if (env === undefined) {
-    log("CRITICAL", "No .env file was provided.");
+    log.error("No .env file was provided.");
     throw new Error("No env file exists lol please make it :)");
 };
 
 // Load configs (that actually matter)
 const { frameVer, autoUpdate, frameID, updateSource, updateURL, frameName } = require('#config/core/core');
 const { load, loadConsole, close } = require('#functions/core/load');
-const { log } = require('#functions/core/log');
+const { log } = require('#functions/core/log.mjs');
 const delay = require("#functions/core/delay");
 
 // Start loading
@@ -18,11 +18,11 @@ const startLoad = Date.now();
 try {
     process.chdir(__dirname);
 } catch (error) {
-    log("CRITICAL", "Could not set the directory.");
+    log.error("Could not set the directory.", error);
     throw new Error(error);
 };
 
-log("INFO", "Starting Server");
+log.info("Starting Server");
 
 // Make sure directories exist lol
 const fs = require('node:fs');
@@ -30,7 +30,7 @@ const path = require('path');
 const dirs = ["plugins", "preload", "console", "databases", "apps"];
 dirs.forEach((dir) => {
     if (!fs.existsSync(dir)) {
-        log("INFO", `Creating directory: ${dir}`);
+        log.info(`Creating directory: ${dir}`);
         fs.mkdirSync(path.join(__dirname, dir));
     };
 });
@@ -61,18 +61,18 @@ const updateCheck = async function () {
     let latestVersion = await getUpdateVersion();
 
     if (frameID < latestVersion) {
-        log("WARN", `You're running an outdated version of ${frameName}! (You are ${latestVersion - frameID} commits behind)`)
-        log("WARN", `Update now at ${updateURL} to make sure that ${frameName} has the latest security fixes!`)
+        log.warn(`You're running an outdated version of ${frameName}! (You are ${latestVersion - frameID} commits behind)`)
+        log.warn(`Update now at ${updateURL} to make sure that ${frameName} has the latest security fixes!`)
         if ((latestVersion - frameID) >= 5) {
-            log(`You are over 5 commits behind. Update to the latest version as soon as possible.`)
+            log.warn(`You are over 5 commits behind. Update to the latest version as soon as possible.`)
         }
     } else if (latestVersion == 0) {
-        log("WARN", "Update systems seem to be failing.")
+        log.warn("Update systems seem to be failing.")
     } else if (frameID > latestVersion) {
-        log("WARN", `You're running an experimental version of ${frameName}! (You are ${frameID - latestVersion} commits ahead)`)
-        log("WARN", `Here be dragons!~`)
+        log.warn(`You're running an experimental version of ${frameName}! (You are ${frameID - latestVersion} commits ahead)`)
+        log.warn(`Here be dragons!~`)
     } else {
-        log("INFO", `You're running the latest version of ${frameName}!`)
+        log.success(`You're running the latest version of ${frameName}!`)
     }
 }
 
@@ -83,14 +83,14 @@ const updateCheck = async function () {
  * @param {Boolean} exit 
  */
 const gracefulShutdown = async function (cause, exit) {
-    log("INFO", `\x1b[36m--------------------- Nex ${date.getFullYear()} ---------------------\x1b[0m`)
-    log("INFO", `Shutdown triggered by: ${cause}`)
-    log("INFO", "Closing all apps...")
+    log.info(`\x1b[36m--------------------- Nex ${date.getFullYear()} ---------------------\x1b[0m`)
+    log.info(`Shutdown triggered by: ${cause}`)
+    log.info("Closing all apps...")
     await close("apps");
     await close("plugins");
     await close("preload");
-    log("INFO", "Shutting down.")
-    log("INFO", `\x1b[36m----------------------------------------------------\x1b[0m`)
+    log.info("Shutting down.")
+    log.info(`\x1b[36m----------------------------------------------------\x1b[0m`)
     if (exit) {
         process.exit(0);
     }
@@ -129,12 +129,12 @@ const main = async () => {
     // This makes my API super modular :)
     await load("apps");
 
-    log("INFO", `\x1b[36m--------------------- Nex ${date.getFullYear()} ---------------------\x1b[0m`)
-    log("INFO", `                 Welcome to ${frameName}!                 `);
-    log("INFO", `             You're running version: ${frameVer}             `);
-    log("INFO", "        Stay up to date for the best features.        ");
-    log("INFO", '\x1b[36m----------------------------------------------------\x1b[0m');
-    log("INFO", `Done in ${(Date.now() - startLoad) / 1000} seconds!`)
+    log.info(`\x1b[36m--------------------- Nex ${date.getFullYear()} ---------------------\x1b[0m`)
+    log.info(`                 Welcome to ${frameName}!                 `);
+    log.info(`             You're running version: ${frameVer}             `);
+    log.info("        Stay up to date for the best features.        ");
+    log.info('\x1b[36m----------------------------------------------------\x1b[0m');
+    log.success(`Done in ${(Date.now() - startLoad) / 1000} seconds!`)
 
     await updateCheck()
 
@@ -153,7 +153,7 @@ const asyncFunctions = async function () {
     if (autoUpdate) {
         autoUpdateCheck();
     } else {
-        log("INFO", "Automatic update checking disabled.")
+        log.info( "Automatic update checking disabled.")
     }
 }
 
@@ -167,7 +167,7 @@ const commandParser = async () => {
 
         // Is this command valid?
         if (!(await loadConsole("console", command))) {
-            log("INFO", "This command is not valid.")
+            log.info("This command is not valid.")
         }
     }
 }

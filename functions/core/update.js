@@ -1,4 +1,5 @@
 const { updateSource, updateURL } = require("#config/core/core");
+const { log } = require("./log.mjs");
 
 /**
  * Gets the latest version of this bot!
@@ -15,10 +16,8 @@ const getUpdateVersion = async function () {
             throw new Error("Not a Number.")
         }
     } catch (error) {
-        console.log(updateURL)
-        log("ERROR", "An error happened while trying to check for updates!")
-        log("ERROR", "Likely caused by the bot being unable to access Github. Full stack trace:")
-        console.error(error);
+        log.error( "An error happened while trying to check for updates!")
+        log.error("Likely caused by the bot being unable to access Github. Full stack trace:", error)
         return 0;
     }
 };

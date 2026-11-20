@@ -8,11 +8,13 @@ This code is not open source. You are not allowed to use this code without my pe
 
 I hold full copyright over this code.
 
-The wider Nexint TOS (https://nexint.ca/tos) does NOT apply towards this program.
+The wider Nexint TOS (https://nexint.ca/tos) does not apply towards the Nexint API. That TOS only applies for projects without dedicated terms, and you are not allowed to use Nexint API.
 
-## Disclosure
+## Disclosures
 
 Previous implementations of the Nexint API (https://github.com/Nexint-Labs/NexAPI) have used AI in the past. You have been warned.
+
+This program is a heavy WIP and is actively being modernized. This program is not expected to be finished for years.
 
 ## Requirements
 
@@ -47,6 +49,4 @@ npm start
 
 ## Why so restrictive?
 
-This program is still a WIP.
-
-This program also acts as the fundamental base for all things Nexint.
+This API is the fundamental basis of all services Nexint. This code is not open source.

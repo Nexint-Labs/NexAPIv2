@@ -1,5 +1,5 @@
 const { expMaxGain } = require("#config/eco/currency");
-const { log } = require("#functions/core/log");
+const { log } = require("#functions/core/log.mjs");
 const { miscinfo, currency } = require("#preload/db/currency");
 const { addMisc } = require("../handleMisc");
 
@@ -54,8 +54,7 @@ const expGain = async function (userId, name) {
     } catch (error) {
 
 
-        log("ERROR", "A server error has happened while trying to gain exp.")
-        console.error(error)
+        log.error("A server error has happened while trying to gain exp.", error)
         return {
             error: true,
             status: 500,

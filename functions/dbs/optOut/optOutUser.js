@@ -1,4 +1,4 @@
-const { log } = require("#functions/core/log");
+const { log } = require("#functions/core/log.mjs");
 const { optOut, optOutDb } = require("#preload/db/optOut");
 const { Op } = require("sequelize");
 
@@ -50,8 +50,7 @@ const getOptOut = async function (userId, secondId = null) {
         }
     } catch (error) {
         // Some error has occured lol
-        log("ERROR", "A server error has happened while trying to query the opt out DB.")
-        console.error(error)
+        log.error("A server error has happened while trying to fetch a user's opt out.", error)
         return {
             error: true,
             status: 500,
@@ -130,8 +129,7 @@ const addOptOut = async function (userId, name) {
     } catch (error) {
 
         // Some serious error has occured.
-        log("ERROR", "A server error has happened while trying to opt out a user.")
-        console.error(error)
+        log.error("A server error has happened while trying to opt out a user.", error)
         return {
             error: true,
             status: 500,
@@ -194,7 +192,7 @@ const delOptOut = async function (userId) {
         }
     } catch (error) {
         // Some error has occured lol
-        log("ERROR", "A server error has happened while trying to opt in a user.")
+        log.error("A server error has happened while trying to opt in a user.", error)
         console.error(error)
         return {
             error: true,

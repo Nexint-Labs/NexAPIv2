@@ -1,4 +1,4 @@
-const { log } = require("#functions/core/log");
+const { log } = require("#functions/core/log.mjs");
 const { analytics, blacklist } = require("#preload/db/analytics");
 
 /**
@@ -72,8 +72,7 @@ const addBlacklist = async function (userId, name) {
     } catch (error) {
 
         // Some serious error has occured.
-        log("ERROR", "A server error has happened while trying to add people to the blacklist.")
-        console.error(error)
+        log.error("A server error has happened while trying to add people to the blacklist.", error)
         return {
             error: true,
             status: 500,
@@ -139,8 +138,7 @@ const delBlacklist = async function (userId, name) {
         }
     } catch (error) {
         // Some error has occured lol
-        log("ERROR", "A server error has happened while trying to remove someone from a blacklist.")
-        console.error(error)
+        log.error("A server error has happened while trying to remove someone from a blacklist.", error)
         return {
             error: true,
             status: 500,
@@ -168,8 +166,7 @@ const getBlacklist = async function () {
         }
     } catch (error) {
         // Some error has occured lol
-        log("ERROR", "A server error has happened while trying to query blacklists..")
-        console.error(error)
+        log.error("A server error has happened while trying to query blacklists.", error)
         return {
             error: true,
             status: 500,

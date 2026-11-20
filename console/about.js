@@ -2,7 +2,7 @@ const { wss } = require('#apps/web');
 const { frameName, frameVer, frameID } = require('#config/core/core');
 const { pluginName, pluginVer } = require('#config/cosmetic/config');
 const { date } = require('#functions/core/date');
-const { log } = require('#functions/core/log');
+const { log, getInfo, getSuccess, getWarn, getError } = require('#functions/core/log.mjs');
 const { getUpdateVersion } = require('#index');
 
 module.exports = {
@@ -29,40 +29,53 @@ module.exports = {
                 switch (print) {
                     case "v":
                     case 'version':
+                        log.info(`\x1b[36m------------------- Version Info -------------------\x1b[0m`)
                         let latestVersion = await getUpdateVersion();
-                        log("INFO", "Printing the version...")
-                        log("INFO", `${pluginName} Version: ${pluginVer}`)
-                        log("INFO", `${frameName} Version: ${frameVer} (Version ID: ${frameID}) / Latest version ID: ${latestVersion}.`)
+                        log.info("Printing the version...")
+                        log.info(`${pluginName} Version: ${pluginVer}`)
+                        log.info(`${frameName} Version: ${frameVer} (Version ID: ${frameID}) / Latest version ID: ${latestVersion}.`)
                         if (latestVersion > frameID) {
-                            log("INFO", `${latestVersion - frameID} commits behind.`)
+                            log.info(`${latestVersion - frameID} commits behind.`)
                         } else if (latestVersion == 0) {
-                            log("WARN", `Updates may or may not be working.`)
+                            log.warn(`Updates may or may not be working.`)
                         } else if (latestVersion < frameID) {
-                            log("INFO", `${frameID - latestVersion} commits ahead.`)
+                            log.info(`${frameID - latestVersion} commits ahead.`)
                         } else {
-                            log("WARN", `Running the latest version.`)
+                            log.info(`Running the latest version.`)
                         }
-                        log("INFO", `\x1b[36m--------------------- Nex ${date.getFullYear()} ---------------------\x1b[0m`)
+                        log.info(`\x1b[36m--------------------- Nex ${date.getFullYear()} ---------------------\x1b[0m`)
                         break;
                     case "clients":
                         const clientCount = wss.clients.size;
-                        log("INFO", `Current clients: ${clientCount}`)
-                        log("INFO", `\x1b[36m--------------------- Nex ${date.getFullYear()} ---------------------\x1b[0m`)
+                        log.info(`Current clients: ${clientCount}`)
+                        log.info(`\x1b[36m--------------------- Nex ${date.getFullYear()} ---------------------\x1b[0m`)
                         break;
                     case "b":
                     case 'build':
-                        log("INFO", `Printing the build!`)
-                        log("INFO", `${pluginName} v${pluginVer}`)
-                        log("INFO", `${frameName} v${frameVer}`)
-                        log("INFO", `\x1b[36m--------------------- Nex ${date.getFullYear()} ---------------------\x1b[0m`)
+                        log.info(`\x1b[36m-------------------- Build Info --------------------\x1b[0m`)
+                        log.info(`Printing the build!`)
+                        log.info(`${pluginName} v${pluginVer}`)
+                        log.info(`${frameName} v${frameVer}`)
+                        log.info(`\x1b[36m--------------------- Nex ${date.getFullYear()} ---------------------\x1b[0m`)
+                        break;
+                    case 'l':
+                    case 'logs':
+                        log.info(`\x1b[36m--------------------- Log Info ---------------------\x1b[0m`)
+                        log.info(`${getInfo() + getSuccess() + getWarn() + getError()} total events.`)
+                        log.info(`${getInfo() - 1} info events.`)
+                        log.info(`${getSuccess()} successful events.`)
+                        log.info(`${getWarn()} warning events.`)
+                        log.info(`${getError()} error events.`)
+                        log.info(`\x1b[36m--------------------- Nex ${date.getFullYear()} ---------------------\x1b[0m`)
                         break;
                     default:
-                        log("WARN", `Not a valid argument.`)
-                        log("INFO", `Valid arguments:`)
-                        log("INFO", `version - Prints version info`)
-                        log("INFO", `build - Prints ${frameName} build`)
-                        log("INFO", `clients - Prints the # of clients connected`)
-                        log("INFO", `\x1b[36m--------------------- Nex ${date.getFullYear()} ---------------------\x1b[0m`)
+                        log.warn(`Not a valid argument.`)
+                        log.info(`Valid arguments:`)
+                        log.info(`version - Prints version info`)
+                        log.info(`build - Prints ${frameName} build`)
+                        log.info(`logs - Prints the log events.`)
+                        log.info(`clients - Prints the # of clients connected`)
+                        log.info(`\x1b[36m--------------------- Nex ${date.getFullYear()} ---------------------\x1b[0m`)
                 }
                 return true;
             default:

@@ -9,7 +9,7 @@ const { pluginName } = require("#config/cosmetic/config");
 const { date } = require("#functions/core/date");
 const delay = require("#functions/core/delay");
 const { loadHelp, load, close } = require("#functions/core/load");
-const { log } = require("#functions/core/log");
+const { log } = require('#functions/core/log.mjs');
 const { gracefulShutdown } = require("#index");
 const { spawn } = require('child_process');
 
@@ -53,11 +53,11 @@ module.exports = {
                 } else {
                     page = 1;
                 }
-                log("INFO", `\x1b[36m----------------- Help menu: (${page}/${Math.ceil((helpMenu.length) / 8)}) -----------------\x1b[0m`)
+                log.info(`\x1b[36m----------------- Help menu: (${page}/${Math.ceil((helpMenu.length) / 8)}) -----------------\x1b[0m`)
                 for (let i = (page - 1) * 8; i < Math.min(8 + ((page - 1) * 8), helpMenu.length); i++) {
-                    log("INFO", helpMenu[i])
+                    log.info(helpMenu[i])
                 }
-                log("INFO", `\x1b[36m--------------------- Nex ${date.getFullYear()} ---------------------\x1b[0m`)
+                log.info(`\x1b[36m--------------------- Nex ${date.getFullYear()} ---------------------\x1b[0m`)
                 return true;
             case "/info":
                 let info;
@@ -87,11 +87,11 @@ module.exports = {
                 } else {
                     info = 1;
                 }
-                log("INFO", `\x1b[36m----------------- Info menu: (${info}/${Math.ceil((infoList.length) / 8)}) -----------------\x1b[0m`)
+                log.info(`\x1b[36m----------------- Info menu: (${info}/${Math.ceil((infoList.length) / 8)}) -----------------\x1b[0m`)
                 for (let i = (info - 1) * 8; i < Math.min(8 + ((info - 1) * 8), infoList.length); i++) {
-                    log("INFO", infoList[i])
+                    log.info(infoList[i])
                 }
-                log("INFO", `\x1b[36m--------------------- Nex ${date.getFullYear()} ---------------------\x1b[0m`)
+                log.info(`\x1b[36m--------------------- Nex ${date.getFullYear()} ---------------------\x1b[0m`)
                 return true;
             case "/end":
             case "/stop":
@@ -110,16 +110,18 @@ module.exports = {
                 process.exit(0);
             case "/reload":
             case "/refresh":
-                
-                log("INFO", "Reloading...")
+                log.info(`\x1b[36m---------------------- Reload ----------------------\x1b[0m`)
+
+                log.info("Reloading...")
                 // Closes apps and plugins
                 await close("apps");
                 await close("plugins");
                 // Load apps and plugins
                 await load("plugins");
                 await load("apps");
-                log("INFO", "Reload complete!")
-                log("WARN", "Note: Reloading is unstable.")
+                log.success("Reload complete!")
+                log.warn("Note: Reloading is unstable.")
+                log.info(`\x1b[36m--------------------- Nex ${date.getFullYear()} ---------------------\x1b[0m`)
                 return true;
             default:
                 return false;

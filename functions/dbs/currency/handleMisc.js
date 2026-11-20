@@ -1,6 +1,6 @@
 const { miscinfo, currency } = require("#preload/db/currency");
 const { Transaction } = require("sequelize");
-const { log } = require("#functions/core/log");
+const { log } = require("#functions/core/log.mjs");
 const { getOptOut } = require("../optOut/optOutUser");
 
 /**
@@ -114,8 +114,7 @@ const addMisc = async function (userId, name, t) {
     } catch (error) {
 
         // Some serious error has occured.
-        log("ERROR", "A server error has happened while trying to add people to misc.")
-        console.error(error)
+        log.error("A server error has happened while trying to add people to misc.", error)
         if(t){
             throw new Error("Creating misc failed.")
         }
@@ -184,8 +183,7 @@ const delMisc = async function (userId, name) {
         }
     } catch (error) {
         // Some error has occured lol
-        log("ERROR", "A server error has happened while trying to remove someone from the bank.")
-        console.error(error)
+        log.error("A server error has happened while trying to remove someone from misc.", error)
         return {
             error: true,
             status: 500,
@@ -228,8 +226,7 @@ const getMisc = async function (depth) {
         }
     } catch (error) {
         // Some error has occured lol
-        log("ERROR", "A server error has happened while trying to query blacklists..")
-        console.error(error)
+        llog.error("A server error has happened while trying to query misc.", error)
         return {
             error: true,
             status: 500,

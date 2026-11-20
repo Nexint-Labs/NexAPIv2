@@ -1,4 +1,4 @@
-const { log } = require("#functions/core/log");
+const { log } = require("#functions/core/log.mjs");
 const { notifyDB, userNotify, devNotify, botNotify } = require("#preload/db/notif");
 const { getOptOut } = require("../optOut/optOutUser");
 
@@ -110,8 +110,7 @@ const addNotif = async function (userId, refresh = false, t = null) {
     } catch (error) {
 
         // Some serious error has occured.
-        log("ERROR", "A server error has happened while trying to register a user.")
-        console.error(error)
+        log.error("A server error has happened while trying to register a user.", error)
         return {
             error: true,
             status: 500,
@@ -174,8 +173,7 @@ const delNotif = async function (userId) {
         }
     } catch (error) {
         // Some error has occured lol
-        log("ERROR", "A server error has happened while trying to unregister a user.")
-        console.error(error)
+        log.error("A server error has happened while trying to query notifications for a user.", error)
         return {
             error: true,
             status: 500,
@@ -212,7 +210,7 @@ const getNotif = async function (userId, refresh, viewAll = false) {
             content: null,
         };
     }
-    
+
     try {
         const notifs = await notifyDB.transaction(async t => {
             const user = await addNotif(userId, refresh, t);
@@ -257,8 +255,7 @@ const getNotif = async function (userId, refresh, viewAll = false) {
         }
     } catch (error) {
         // Some error has occured lol
-        log("ERROR", "A server error has happened while trying to query the notify DB.")
-        console.error(error)
+        log.error("A server error has happened while trying to unregister a user.", error)
         return {
             error: true,
             status: 500,

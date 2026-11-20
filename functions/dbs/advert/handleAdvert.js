@@ -1,6 +1,6 @@
 const { frameName } = require("#config/core/core");
 const { analytics, advert } = require("#preload/db/analytics");
-const { log } = require("#functions/core/log");
+const { log } = require("#functions/core/log.mjs");
 
 /**
  * Adds an advertisement.
@@ -57,8 +57,7 @@ const addAdvert = async function (name) {
     } catch (error) {
 
         // Some serious error has occured.
-        log("ERROR", "A server error has happened while trying to add an advertisement.")
-        console.error(error)
+        log.error("A server error has happened while trying to add an advertisement.", error)
         return {
             error: true,
             status: 500,
@@ -119,8 +118,7 @@ const delAdvert = async function (name) {
         }
     } catch (error) {
         // Some error has occured lol
-        log("ERROR", "A server error has happened while trying to delete an advertisement.")
-        console.error(error)
+        log.error("A server error has happened while trying to delete an advertisement.", error)
         return {
             error: true,
             status: 500,
@@ -148,8 +146,7 @@ const getAdvert = async function () {
         }
     } catch (error) {
         // Some error has occured lol
-        log("ERROR", "A server error has happened while trying to query the advertisement API.")
-        console.error(error)
+        log.error("A server error has happened while trying to query the advertisement API.", error)
         return {
             error: true,
             status: 500,

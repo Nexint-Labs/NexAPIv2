@@ -28,7 +28,7 @@ const convNameToID = async function (name) {
         }
     } catch (error) {
         // Some error has occured lol
-        log("ERROR", "A server error has happened while trying to query blacklists..")
+        log.error("A server error has happened while trying to query the balance.", error)
         console.error(error)
         return {
             error: true,

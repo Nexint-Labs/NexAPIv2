@@ -2,7 +2,7 @@
 const WebSocket = require('ws');
 const { createServer } = require('http');
 const express = require('express');
-const { log } = require('#functions/core/log');
+const { log } = require('#functions/core/log.mjs');
 
 const app = express();
 const server = createServer(app);
@@ -19,30 +19,27 @@ module.exports = {
     async execute() {
         try {
             server.listen(process.env.PORT, () => {
-                log("INFO", `Listening at port ${process.env.PORT}`);
+                log.success(`Listening at port ${process.env.PORT}`);
             });
         } catch {
-            log("ERROR", "Could not open server.")
-            console.error(error)
+            log.error("Could not open server.", error)
         }
     },
     async reload() {
         try {
             await server[Symbol.asyncDispose]();
             server.listen(process.env.PORT, () => {
-                log("INFO", `Listening at port ${process.env.PORT}`);
+                log.success(`Listening at port ${process.env.PORT}`);
             });
-        } catch (error) {
-            log("ERROR", "Could not reload server.")
-            console.error(error)
+        } catch {
+            log.error("Could not open server.", error)
         }
     },
     async close() {
         try {
             await server[Symbol.asyncDispose]();
         } catch (error) {
-            log("ERROR", "Could not close server.")
-            console.error(error)
+            log.error("Could not close server.", error)
         }
     }
 }

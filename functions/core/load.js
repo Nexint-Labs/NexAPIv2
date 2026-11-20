@@ -1,6 +1,6 @@
 const fs = require("node:fs");
 const path = require('path');
-const { log } = require("#functions/core/log");
+const { log } = require("./log.mjs");
 const { verbose } = require("#config/core/core");
 
 
@@ -23,12 +23,12 @@ const load = async function (dir) {
                 try {
                     await plugin.execute();
                     if (verbose) {
-                        log("INFO", `Loaded file: ${path.join(dir, file)}`)
+                        log.info(`Loaded file: ${path.join(dir, file)}`)
                     }
                 } catch (error) {
-                    log("ERROR", "Failed to load files.")
-                    log("ERROR", `Problematic file: ${path.join(dir, file)}`)
-                    throw new Error(error);
+                    log.error("Failed to load files.")
+                    log.error(`Problematic file: ${path.join(dir, file)}`, error)
+                    throw new Error("File loading failed.");
                 }
             }
         }
@@ -57,12 +57,12 @@ const loadConsole = async function (dir, command) {
                 try {
                     validCommand = await console.command(command);
                     if (verbose) {
-                        log("INFO", `Loaded file: ${path.join(dir, file)}`)
+                        log.info(`Loaded file: ${path.join(dir, file)}`)
                     }
                 } catch (error) {
-                    log("ERROR", "Failed to load files.")
-                    log("ERROR", `Problematic file: ${path.join(dir, file)}`)
-                    throw new Error(error);
+                    log.error("Failed to load console files.")
+                    log.error(`Problematic file: ${path.join(dir, file)}`, error)
+                    throw new Error("File loading failed.");
                 }
             }
             if(validCommand){
@@ -94,9 +94,9 @@ const loadHelp = async function (dir) {
                 try {
                     helpArray = helpArray.concat(await help.help())
                 } catch (error) {
-                    log("ERROR", "Failed to load help menus.")
-                    log("ERROR", `Problematic file: ${path.join(dir, file)}`)
-                    throw new Error(error);
+                    log.error("Failed to load help menu.")
+                    log.error(`Problematic file: ${path.join(dir, file)}`, error)
+                    throw new Error("File loading failed.");
                 }
             }
         }
@@ -124,11 +124,11 @@ const close = async function (dir) {
                 try {
                     await app.close()
                     if (verbose) {
-                        log("INFO", `Closed file: ${path.join(dir, file)}`)
+                        log.info(`Closed file: ${path.join(dir, file)}`)
                     }
                 } catch (error) {
-                    log("ERROR", "Failed to close apps.")
-                    log("ERROR", `Problematic file: ${path.join(dir, file)}`)
+                    log.error("Failed to close app.")
+                    log.error(`Problematic file: ${path.join(dir, file)}`, error)
                     success = false
                 }
             }
