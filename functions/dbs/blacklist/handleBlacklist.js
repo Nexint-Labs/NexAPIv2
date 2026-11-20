@@ -18,7 +18,7 @@ const addBlacklist = async function (userId, name) {
                 where: {
                     userid: userId,
                 },
-                default: {
+                defaults: {
                     user: name,
                     timeStamp: Math.round(Date.now() / 1000),
                 },

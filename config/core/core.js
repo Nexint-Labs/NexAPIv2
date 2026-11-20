@@ -11,7 +11,7 @@ module.exports = {
     autoUpdate: false,
     frameName: "Prism", // Unified Framework Name
     frameVer: "0.7.0-dev", // Unified Framework version
-    frameID: 13, // Framework version ID
+    frameID: 14, // Framework version ID
     updateURL: "https://github.com/Nexint-Labs/NexAPIv2/",
     updateSource: "https://raw.githubusercontent.com/Nexint-Labs/NexAPIv2/refs/heads/main/ver.txt",
 

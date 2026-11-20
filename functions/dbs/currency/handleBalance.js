@@ -1,6 +1,7 @@
 const { balance, currency } = require("#preload/db/currency");
 const { Transaction } = require("sequelize");
 const { log } = require("#functions/core/log");
+const { getOptOut } = require("../optOut/optOutUser");
 
 /**
  * Query or add a balance.
@@ -10,6 +11,25 @@ const { log } = require("#functions/core/log");
  * @returns 
  */
 const addBalance = async function (userId, name) {
+    const optOut = await getOptOut(userId);
+    if (optOut === true) {
+        return {
+            error: true,
+            status: 410,
+            title: "Opted out.",
+            desc: `${userId} is opted out.`,
+            content: null,
+        };
+    } else if (optOut === null) {
+        return {
+            error: optOut.error,
+            status: optOut.status,
+            title: optOut.title,
+            desc: optOut.desc,
+            content: null,
+        };
+    }
+
     try {
 
         // Try to create the user
@@ -18,10 +38,10 @@ const addBalance = async function (userId, name) {
             // idk why im using find or create :sob:
             let [user, created] = await balance.findOrCreate({
                 where: {
-                    userid: userId,
+                    userId: userId,
                 },
-                default: {
-                    user: name,
+                defaults: {
+                    name: name,
                     value: 0,
                     multiplier: 1,
                 },
@@ -45,7 +65,7 @@ const addBalance = async function (userId, name) {
                 },
                 {
                     where: {
-                        userid: userId,
+                        userId: userId,
                     },
                     transaction: t
                 },
@@ -99,7 +119,7 @@ const delBalance = async function (userId, name) {
 
             const rowCount = await balance.destroy({
                 where: {
-                    userid: userId,
+                    userId: userId,
                 },
             }, { transaction: t })
             if (!rowCount) {
@@ -109,7 +129,7 @@ const delBalance = async function (userId, name) {
                     title: "Gone",
                     desc: `${name} is not registered.`,
                     content: {
-                        userid: userId,
+                        userId: userId,
                         user: name
                     },
                 }
@@ -165,16 +185,16 @@ const delBalance = async function (userId, name) {
  */
 const updateBalance = async function (userId, name, value, multiplier, transaction) {
     const result = await addBalance(userId, name)
-    if(result.error){
+    if (result.error) {
         throw new Error(result.desc)
     }
     const user = result.content
 
     let newValue = user.value, newMulti = user.multiplier;
-    if(Number.isFinite(value)){
+    if (Number.isFinite(value)) {
         newValue = value
     }
-    if(Number.isFinite(multiplier)){
+    if (Number.isFinite(multiplier)) {
         newMulti = multiplier
     }
 
@@ -187,7 +207,7 @@ const updateBalance = async function (userId, name, value, multiplier, transacti
         },
         {
             where: {
-                userid: userId,
+                userId: userId,
             },
         }, { transaction }
     );

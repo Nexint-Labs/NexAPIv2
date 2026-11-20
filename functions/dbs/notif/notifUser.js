@@ -1,5 +1,6 @@
 const { log } = require("#functions/core/log");
 const { notifyDB, userNotify, devNotify, botNotify } = require("#preload/db/notif");
+const { getOptOut } = require("../optOut/optOutUser");
 
 /**
  * Adds a notification user, or queries them.
@@ -9,6 +10,24 @@ const { notifyDB, userNotify, devNotify, botNotify } = require("#preload/db/noti
  * @returns 
  */
 const addNotif = async function (userId, refresh = false, t = null) {
+    const optOut = await getOptOut(userId);
+    if (optOut === true) {
+        return {
+            error: true,
+            status: 410,
+            title: "Opted out.",
+            desc: `${userId} is opted out.`,
+            content: null,
+        };
+    } else if (optOut === null) {
+        return {
+            error: optOut.error,
+            status: optOut.status,
+            title: optOut.title,
+            desc: optOut.desc,
+            content: null,
+        };
+    }
 
     const createUser = async function (userId, t) {
         let [user, created] = await userNotify.findOrCreate({
@@ -175,6 +194,25 @@ const delNotif = async function (userId) {
  * @returns 
  */
 const getNotif = async function (userId, refresh, viewAll = false) {
+    const optOut = await getOptOut(userId);
+    if (optOut === true) {
+        return {
+            error: true,
+            status: 410,
+            title: "Opted out.",
+            desc: `${userId} is opted out.`,
+            content: null,
+        };
+    } else if (optOut === null) {
+        return {
+            error: optOut.error,
+            status: optOut.status,
+            title: optOut.title,
+            desc: optOut.desc,
+            content: null,
+        };
+    }
+    
     try {
         const notifs = await notifyDB.transaction(async t => {
             const user = await addNotif(userId, refresh, t);

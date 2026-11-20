@@ -26,11 +26,53 @@ router.get('/', jsonParser, async (req, res) => {
         content: {
             // 0 means offline, 1 means online
             status: 1,
-            version: 1,
+            version: 2,
             balance: balance,
         },
         refreshDate: Date.now(),
         error: false,
+    })
+})
+
+// Query the leaderboards.
+// Wack behavior, absolutely. I don't know what I'm doing :)
+router.query('/', jsonParser, async (req, res) => {
+
+    // Get the request
+    let request = req.body;
+
+    // Get depth if exists...
+    const { depth } = request;
+
+    // Find all accounts for a specific depth
+    const balance = await getBalance(depth);
+    const bank = await getBank(depth);
+
+    // Return the notification list
+    if (balance.error) {
+        res.status(balance.status).json({
+            error: balance.title,
+            desc: balance.desc,
+            content: balance.content,
+        })
+        return;
+    }
+    if (bank.error) {
+        res.status(bank.status).json({
+            error: bank.title,
+            desc: bank.desc,
+            content: bank.content,
+        })
+        return;
+    }
+
+    res.status(200).json({
+        error: false,
+        desc: "Currency Leaderboards:",
+        content: {
+            balance: balance.content,
+            bank: bank.content,
+        },
     })
 })
 
@@ -65,22 +107,31 @@ router.post('/', jsonParser, async (req, res) => {
 
     const balance = await addBalance(userId, name);
     const bank = await addBank(userId, name);
-    const result = {
-        balance,
-        bank,
-    }
-    if (result.error) {
-        res.status(result.status).json({
-            error: result.title,
-            desc: result.desc,
-            content: result.content,
+
+    if (balance.error) {
+        res.status(balance.status).json({
+            error: balance.title,
+            desc: balance.desc,
+            content: balance.content,
         })
         return;
     }
-    res.status(result.status).json({
+    if (bank.error) {
+        res.status(bank.status).json({
+            error: bank.title,
+            desc: bank.desc,
+            content: bank.content,
+        })
+        return;
+    }
+    res.status(200).json({
         error: false,
-        desc: result.desc,
-        content: result.content,
+        desc: "User Info (Balance)",
+        content: {
+            balance: balance.content,
+            bank: bank.content,
+
+        },
     })
     return;
 })

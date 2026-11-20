@@ -10,13 +10,6 @@ router.get('/', jsonParser, async (req, res) => {
 
     // Find all blacklists
     const listBlacklist = await getBlacklist();
-    /*console.log(listBlacklist.content)
-    const blacklist = [];
-    const blacklistName = [];
-    blacklist.forEach(async id => {
-        blacklist.push(id.userid);
-        blacklistName.push(id.user);
-    })*/
 
     // Return the blacklist
     res.json({

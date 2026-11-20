@@ -26,7 +26,23 @@ module.exports = {
             console.error(error)
         }
     },
+    async reload() {
+        try {
+            await server[Symbol.asyncDispose]();
+            server.listen(process.env.PORT, () => {
+                log("INFO", `Listening at port ${process.env.PORT}`);
+            });
+        } catch (error) {
+            log("ERROR", "Could not reload server.")
+            console.error(error)
+        }
+    },
     async close() {
-        await server.close();
+        try {
+            await server[Symbol.asyncDispose]();
+        } catch (error) {
+            log("ERROR", "Could not close server.")
+            console.error(error)
+        }
     }
 }

@@ -1,9 +1,67 @@
 const { log } = require("#functions/core/log");
 const { optOut, optOutDb } = require("#preload/db/optOut");
 const { Op } = require("sequelize");
-const { delBalance } = require("../currency/handleBalance");
-const { delBank } = require("../currency/handleBank");
-const { delNotif } = require("../notif/notifUser");
+
+/**
+ * Queries if they are opted in?
+ * @param {String} userId 
+ * @returns 
+ */
+const getOptOut = async function (userId, secondId = null) {
+    try {
+        let result;
+        if (secondId) {
+            result = await optOut.findOne({
+                where: {
+                    [Op.or]: [
+                        {
+                            userId: userId
+                        },
+                        {
+                            userId: secondId
+                        },
+                    ]
+                }
+            })
+        } else {
+            result = await optOut.findOne({
+                where: {
+                    userId: userId
+                }
+            })
+        }
+
+        if (result !== null) {
+            return {
+                error: false,
+                status: 200,
+                title: "Opt Out",
+                desc: `Someone is opted out.`,
+                content: true
+            }
+        } else {
+            return {
+                error: false,
+                status: 200,
+                title: "Opt Out",
+                desc: `Someone is opted in.`,
+                content: false
+            }
+        }
+    } catch (error) {
+        // Some error has occured lol
+        log("ERROR", "A server error has happened while trying to query the opt out DB.")
+        console.error(error)
+        return {
+            error: true,
+            status: 500,
+            title: "Server Error",
+            desc: "The server in question has faced a serious server error.",
+            content: null,
+        }
+
+    }
+}
 
 /**
  * Opts out a user and DELETES ALL INFO ASSOCIATED HELP
@@ -26,9 +84,15 @@ const addOptOut = async function (userId, name) {
             })
 
             // Update the notification lol
+            const { delBalance } = require("../currency/handleBalance");
+            const { delBank } = require("../currency/handleBank");
+            const { delNotif } = require("../notif/notifUser");
+            const { delMisc } = require("../currency/handleMisc");
+
             await delNotif(userId);
             await delBalance(userId, name);
             await delBank(userId, name);
+            await delMisc(userId, name);
 
             if (!created) {
                 return {
@@ -139,67 +203,6 @@ const delOptOut = async function (userId) {
             desc: "The server in question has faced a serious server error.",
             content: null,
         }
-    }
-}
-
-/**
- * Queries if they are opted in?
- * @param {String} userId 
- * @returns 
- */
-const getOptOut = async function (userId, secondId = null) {
-    try {
-        let result;
-        if (secondId) {
-            result = await optOut.findOne({
-                where: {
-                    [Op.or]: [
-                        {
-                            userId: userId
-                        },
-                        {
-                            userId: secondId
-                        },
-                    ]
-                }
-            })
-        } else {
-            result = await optOut.findOne({
-                where: {
-                    userId: userId
-                }
-            })
-        }
-
-        if (result !== null) {
-            return {
-                error: false,
-                status: 200,
-                title: "Opt Out",
-                desc: `Someone is opted out.`,
-                content: true
-            }
-        } else {
-            return {
-                error: false,
-                status: 200,
-                title: "Opt Out",
-                desc: `Someone is opted in.`,
-                content: false
-            }
-        }
-    } catch (error) {
-        // Some error has occured lol
-        log("ERROR", "A server error has happened while trying to query the opt out DB.")
-        console.error(error)
-        return {
-            error: true,
-            status: 500,
-            title: "Server Error",
-            desc: "The server in question has faced a serious server error.",
-            content: null,
-        }
-
     }
 }
 

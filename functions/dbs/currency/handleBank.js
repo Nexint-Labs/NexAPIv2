@@ -1,6 +1,7 @@
 const { bank, currency } = require("#preload/db/currency");
 const { Transaction } = require("sequelize");
 const { log } = require("#functions/core/log");
+const { getOptOut } = require("../optOut/optOutUser");
 
 /**
  * Query or add a bank account.
@@ -10,6 +11,25 @@ const { log } = require("#functions/core/log");
  * @returns 
  */
 const addBank = async function (userId, name) {
+    
+    const optOut = await getOptOut(userId);
+    if (optOut === true) {
+        return {
+            error: true,
+            status: 410,
+            title: "Opted out.",
+            desc: `${name} is opted out.`,
+            content: null,
+        };
+    } else if (optOut === null) {
+        return {
+            error: optOut.error,
+            status: optOut.status,
+            title: optOut.title,
+            desc: optOut.desc,
+            content: null,
+        };
+    }
     try {
 
         // Try to create the user
@@ -18,10 +38,10 @@ const addBank = async function (userId, name) {
             // idk why im using find or create :sob:
             let [user, created] = await bank.findOrCreate({
                 where: {
-                    userid: userId,
+                    userId: userId,
                 },
-                default: {
-                    user: name,
+                defaults: {
+                    name: name,
                     value: 0,
                     maxValue: 1,
                 },
@@ -41,11 +61,11 @@ const addBank = async function (userId, name) {
             // Update the username lol
             await user.update(
                 {
-                    user: name
+                    name: name
                 },
                 {
                     where: {
-                        userid: userId,
+                        userId: userId,
                     },
                     transaction: t
                 }
@@ -99,7 +119,7 @@ const delBank = async function (userId, name) {
 
             const rowCount = await bank.destroy({
                 where: {
-                    userid: userId,
+                    userId: userId,
                 },
                 transaction: t
             })
@@ -110,8 +130,8 @@ const delBank = async function (userId, name) {
                     title: "Gone",
                     desc: `${name} is not registered.`,
                     content: {
-                        userid: userId,
-                        user: name
+                        userId: userId,
+                        name: name
                     },
                 }
             }
@@ -180,13 +200,13 @@ const updateBank = async function (userId, name, value, maxValue, transaction) {
     // Update Name
     await user.update(
         {
-            user: name,
+            name: name,
             value: newValue,
             maxValue: newMaxValue,
         },
         {
             where: {
-                userid: userId,
+                userId: userId,
             },
         }, { transaction }
     );
