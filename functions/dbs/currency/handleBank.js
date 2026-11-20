@@ -8,9 +8,10 @@ const { getOptOut } = require("../optOut/optOutUser");
  * Misleading name? yes, but I do not care lol
  * @param {String} userId 
  * @param {String} name 
+ * @param {Transaction} t
  * @returns 
  */
-const addBank = async function (userId, name) {
+const addBank = async function (userId, name, t) {
     const optOut = await getOptOut(userId);
     if (optOut.content === true) {
         return {
@@ -30,23 +31,64 @@ const addBank = async function (userId, name) {
         };
     }
 
+    const createBank = async function (userId, t) {
+
+        // idk why im using find or create :sob:
+        let [user, created] = await bank.findOrCreate({
+            where: {
+                userId: userId,
+            },
+            defaults: {
+                name: name,
+                value: 0,
+                maxValue: 1,
+            },
+            transaction: t
+        })
+
+        // Update the username lol
+        await user.update(
+            {
+                name: name
+            },
+            {
+                where: {
+                    userId: userId,
+                },
+                transaction: t
+            }
+        );
+
+        return [user, created]
+    }
+
+    // Transaction safety, outside try-catch because I want errors to propagate :)
+    if (t) {
+        let [user, created] = await createBank(userId, t)
+        if (!created) {
+            return {
+                error: true,
+                status: 409,
+                title: "Already created.",
+                desc: `${name} is already registered.`,
+                content: user,
+            };
+        }
+        return {
+            error: false,
+            status: 201,
+            title: "Created Misc.",
+            desc: `${name} is now registered.`,
+            content: user,
+        }
+    }
+
     try {
 
         // Try to create the user
         const result = await currency.transaction(async t => {
 
-            // idk why im using find or create :sob:
-            let [user, created] = await bank.findOrCreate({
-                where: {
-                    userId: userId,
-                },
-                defaults: {
-                    name: name,
-                    value: 0,
-                    maxValue: 1,
-                },
-                transaction: t
-            })
+            let [user, created] = await createBank(userId, t)
 
             if (!created) {
                 return {
@@ -57,19 +99,6 @@ const addBank = async function (userId, name) {
                     content: user,
                 };
             }
-
-            // Update the username lol
-            await user.update(
-                {
-                    name: name
-                },
-                {
-                    where: {
-                        userId: userId,
-                    },
-                    transaction: t
-                }
-            );
 
             return user;
         });
@@ -172,45 +201,6 @@ const delBank = async function (userId, name) {
 }
 
 /**
- * Update Balance, now with transactions!
- * This function is meant to be used with transactions. Do not use it standalone.
- * @param {String} userId 
- * @param {String} name 
- * @param {Number} value 
- * @param {Number} multiplier 
- * @param {Transaction} transaction 
- */
-const updateBank = async function (userId, name, value, maxValue, transaction) {
-    const result = await addBank(userId, name)
-    if(result.error){
-        throw new Error(result.desc)
-    }
-    const user = result.content
-
-    let newValue = user.value, newMaxValue = user.maxValue;
-    if(Number.isFinite(value)){
-        newValue = value
-    }
-    if(Number.isFinite(bank)){
-        newMaxValue = maxValue
-    }
-
-    // Update Name
-    await user.update(
-        {
-            name: name,
-            value: newValue,
-            maxValue: newMaxValue,
-        },
-        {
-            where: {
-                userId: userId,
-            },
-        }, { transaction }
-    );
-}
-
-/**
  * Gets all balances
  * @param {Number} depth 
  * @returns 
@@ -258,5 +248,4 @@ module.exports = {
     addBank,
     delBank,
     getBank,
-    updateBank
 }
