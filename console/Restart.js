@@ -8,9 +8,9 @@ const { restart, frameName } = require("#config/core/core");
 const { pluginName } = require("#config/cosmetic/config");
 const { date } = require("#functions/core/date");
 const delay = require("#functions/core/delay");
-const { loadHelp, load, close } = require("#functions/core/load");
+const { loadHelp } = require("#functions/core/load");
 const { log } = require('#functions/core/log.mjs');
-const { gracefulShutdown } = require("#index");
+const { gracefulShutdown, refreshCycle, reload } = require('#functions/core/powerCycle');
 const { spawn } = require('child_process');
 
 module.exports = {
@@ -108,20 +108,11 @@ module.exports = {
                 child.unref()
                 await delay(1000)
                 process.exit(0);
-            case "/reload":
             case "/refresh":
-                log.info(`\x1b[36m---------------------- Reload ----------------------\x1b[0m`)
-
-                log.info("Reloading...")
-                // Closes apps and plugins
-                await close("apps");
-                await close("plugins");
-                // Load apps and plugins
-                await load("plugins");
-                await load("apps");
-                log.success("Reload complete!")
-                log.warn("Note: Reloading is unstable.")
-                log.info(`\x1b[36m--------------------- Nex ${date.getFullYear()} ---------------------\x1b[0m`)
+                await refreshCycle("Console // Refresh")
+                return true;
+            case "/reload":
+                await reload("Console // Reload")
                 return true;
             default:
                 return false;

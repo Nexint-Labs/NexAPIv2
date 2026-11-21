@@ -2,6 +2,7 @@ const fs = require("node:fs");
 const path = require('path');
 const { log } = require("./log.mjs");
 const { verbose } = require("#config/core/core");
+const { forceShutdown } = require("./fatalShutdown.mjs");
 
 
 /**
@@ -18,18 +19,18 @@ const load = async function (dir) {
         if (file.includes(".js")) {
 
             // Execute the plugin?
-            const plugin = require(path.join(process.cwd(), dir, file));
-            if ('execute' in plugin && !('data' in plugin)) { // Discord fix lol
-                try {
+            try {
+                const plugin = require(path.join(process.cwd(), dir, file));
+                if ('execute' in plugin && !('data' in plugin)) { // Discord fix lol
                     await plugin.execute();
                     if (verbose) {
                         log.info(`Loaded file: ${path.join(dir, file)}`)
                     }
-                } catch (error) {
-                    log.error("Failed to load files.")
-                    log.error(`Problematic file: ${path.join(dir, file)}`, error)
-                    throw new Error("File loading failed.");
                 }
+            } catch (error) {
+                log.error("Failed to load files.")
+                log.error(`Problematic file: ${path.join(dir, file)}`, error)
+                await forceShutdown("Failed to load files.")
             }
         }
     }
@@ -52,21 +53,21 @@ const loadConsole = async function (dir, command) {
         if (file.includes(".js")) {
 
             // Load the console command?
-            const console = require(path.join(process.cwd(), dir, file));
-            if ('command' in console) {
-                try {
+            try {
+                const console = require(path.join(process.cwd(), dir, file));
+                if ('command' in console) {
                     validCommand = await console.command(command);
                     if (verbose) {
                         log.info(`Loaded file: ${path.join(dir, file)}`)
                     }
-                } catch (error) {
-                    log.error("Failed to load console files.")
-                    log.error(`Problematic file: ${path.join(dir, file)}`, error)
-                    throw new Error("File loading failed.");
                 }
-            }
-            if(validCommand){
-                return true
+                if (validCommand) {
+                    return true
+                }
+            } catch (error) {
+                log.error("Failed to load console files.")
+                log.error(`Problematic file: ${path.join(dir, file)}`, error)
+                await forceShutdown("Failed to load console files.")
             }
         }
     }
@@ -89,15 +90,15 @@ const loadHelp = async function (dir) {
         if (file.includes(".js")) {
 
             // Load the help menu?
-            const help = require(path.join(process.cwd(), dir, file));
-            if ('help' in help) {
-                try {
+            try {
+                const help = require(path.join(process.cwd(), dir, file));
+                if ('help' in help) {
                     helpArray = helpArray.concat(await help.help())
-                } catch (error) {
-                    log.error("Failed to load help menu.")
-                    log.error(`Problematic file: ${path.join(dir, file)}`, error)
-                    throw new Error("File loading failed.");
                 }
+            } catch (error) {
+                log.error("Failed to load help menu.")
+                log.error(`Problematic file: ${path.join(dir, file)}`, error)
+                await forceShutdown("Failed to load help menu")
             }
         }
     }
@@ -118,19 +119,59 @@ const close = async function (dir) {
         // Only load JS files (trust)
         if (file.includes(".js")) {
 
-            // Load the help menu?
-            const app = require(path.join(process.cwd(), dir, file));
-            if ('close' in app) {
-                try {
+            try {
+                // Load the help menu?
+                const filename = require.resolve(path.join(process.cwd(), dir, file));
+                const cached = require.cache[filename];
+
+                if (!cached || !cached.loaded) {
+                    continue;
+                }
+
+                const app = cached.exports;
+                if ('close' in app) {
                     await app.close()
                     if (verbose) {
                         log.info(`Closed file: ${path.join(dir, file)}`)
                     }
-                } catch (error) {
-                    log.error("Failed to close app.")
-                    log.error(`Problematic file: ${path.join(dir, file)}`, error)
-                    success = false
                 }
+            } catch (error) {
+                log.error("Failed to close app.")
+                log.error(`Problematic file: ${path.join(dir, file)}`, error)
+                success = false
+            }
+        }
+    }
+    return success;
+}
+
+/**
+ * Refresh everything
+ * @param {String} dir 
+ */
+const refresh = async function (dir) {
+
+    let success = true;
+
+    const files = fs.readdirSync(path.join(process.cwd(), dir), { recursive: true });
+    for (const file of files) {
+
+        // Only load JS files (trust)
+        if (file.includes(".js")) {
+
+            try {
+                // Load the help menu?
+                const app = require(path.join(process.cwd(), dir, file));
+                if ('reload' in app) {
+                    await app.reload()
+                    if (verbose) {
+                        log.info(`Refreshed file: ${path.join(dir, file)}`)
+                    }
+                }
+            } catch (error) {
+                log.error("Failed to refresh app.")
+                log.error(`Problematic file: ${path.join(dir, file)}`, error)
+                success = false
             }
         }
     }
@@ -141,5 +182,6 @@ module.exports = {
     load,
     loadConsole,
     loadHelp,
-    close
+    close,
+    refresh
 }

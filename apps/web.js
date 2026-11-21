@@ -16,30 +16,43 @@ module.exports = {
     app,
     server,
     wss,
+
     async execute() {
-        try {
-            server.listen(process.env.PORT, () => {
+        await new Promise((resolve, reject) => {
+            const onError = (error) => {
+                server.off("listening", onListening);
+                reject(error);
+            };
+
+            const onListening = () => {
+                server.off("error", onError);
                 log.success(`Listening at port ${process.env.PORT}`);
-            });
-        } catch (error) {
-            log.error("Could not open server.", error)
-        }
+                resolve();
+            };
+
+            server.once("error", onError);
+            server.once("listening", onListening);
+            server.listen(process.env.PORT);
+        });
     },
-    async reload() {
-        try {
-            await server[Symbol.asyncDispose]();
-            server.listen(process.env.PORT, () => {
-                log.success(`Listening at port ${process.env.PORT}`);
-            });
-        } catch (error) {
-            log.error("Could not open server.", error)
-        }
-    },
+
     async close() {
-        try {
+        // Terminate WebSocket clients
+        for (const client of wss.clients) {
+            client.terminate();
+        }
+
+        // Close WebSocket server
+        await new Promise((resolve, reject) => {
+            wss.close(error => {
+                if (error) reject(error);
+                else resolve();
+            });
+        });
+
+        // Close HTTP server
+        if (server.listening) {
             await server[Symbol.asyncDispose]();
-        } catch (error) {
-            log.error("Could not close server.", error)
         }
     }
 }

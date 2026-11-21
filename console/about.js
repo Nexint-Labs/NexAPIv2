@@ -2,7 +2,7 @@ const { wss } = require('#apps/web');
 const { frameName, frameVer, frameID } = require('#config/core/core');
 const { pluginName, pluginVer } = require('#config/cosmetic/config');
 const { date } = require('#functions/core/date');
-const { log, getInfo, getSuccess, getWarn, getError } = require('#functions/core/log.mjs');
+const { log, getInfo, getSuccess, getWarn, getError, getFatal, getEvent } = require('#functions/core/log.mjs');
 const { getUpdateVersion } = require('#index');
 
 module.exports = {
@@ -45,11 +45,6 @@ module.exports = {
                         }
                         log.info(`\x1b[36m--------------------- Nex ${date.getFullYear()} ---------------------\x1b[0m`)
                         break;
-                    case "clients":
-                        const clientCount = wss.clients.size;
-                        log.info(`Current clients: ${clientCount}`)
-                        log.info(`\x1b[36m--------------------- Nex ${date.getFullYear()} ---------------------\x1b[0m`)
-                        break;
                     case "b":
                     case 'build':
                         log.info(`\x1b[36m-------------------- Build Info --------------------\x1b[0m`)
@@ -61,20 +56,21 @@ module.exports = {
                     case 'l':
                     case 'logs':
                         log.info(`\x1b[36m--------------------- Log Info ---------------------\x1b[0m`)
-                        log.info(`${getInfo() + getSuccess() + getWarn() + getError()} total events.`)
+                        log.info(`${getInfo() + getSuccess() + getWarn() + getError() + getFatal() + getEvent()} total events.`)
                         log.info(`${getInfo() - 1} info events.`)
                         log.info(`${getSuccess()} successful events.`)
                         log.info(`${getWarn()} warning events.`)
                         log.info(`${getError()} error events.`)
+                        log.info(`${getFatal()} fatal events.`)
+                        log.info(`${getEvent()} general events.`)
                         log.info(`\x1b[36m--------------------- Nex ${date.getFullYear()} ---------------------\x1b[0m`)
                         break;
                     default:
-                        log.warn(`Not a valid argument.`)
+                        log.info(`Not a valid argument.`)
                         log.info(`Valid arguments:`)
                         log.info(`version - Prints version info`)
                         log.info(`build - Prints ${frameName} build`)
                         log.info(`logs - Prints the log events.`)
-                        log.info(`clients - Prints the # of clients connected`)
                         log.info(`\x1b[36m--------------------- Nex ${date.getFullYear()} ---------------------\x1b[0m`)
                 }
                 return true;

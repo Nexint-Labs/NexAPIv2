@@ -1,62 +1,20 @@
+console.log("Importing logging. If this goes wrong, you're cooked.")
+
 // Import the .env lol
 const env = require('dotenv').config({ path: __dirname + '/.env' });
-if (env === undefined) {
-    log.error("No .env file was provided.");
-    throw new Error("No env file exists lol please make it :)");
-};
+const { log } = require('#functions/core/log.mjs');
+
+log.event("Loading configs... If this bot stops here, something went seriously wrong!")
 
 // Load configs (that actually matter)
-const { frameVer, autoUpdate, frameID, updateSource, updateURL, frameName } = require('#config/core/core');
-const { load, loadConsole, close } = require('#functions/core/load');
-const { log } = require('#functions/core/log.mjs');
+const { frameVer, autoUpdate, frameID, updateURL, frameName, errorPolicy } = require('#config/core/core');
+const { load, loadConsole } = require('#functions/core/load');
 const delay = require("#functions/core/delay");
-
-// Start loading
-const startLoad = Date.now();
-
-// Set the directory
-try {
-    process.chdir(__dirname);
-} catch (error) {
-    log.error("Could not set the directory.", error);
-    throw new Error(error);
-};
-
-log.info("Starting Server");
-
-// Make sure directories exist lol
-const fs = require('node:fs');
-const path = require('path');
-const dirs = ["plugins", "preload", "console", "databases", "apps"];
-dirs.forEach((dir) => {
-    if (!fs.existsSync(dir)) {
-        log.info(`Creating directory: ${dir}`);
-        fs.mkdirSync(path.join(__dirname, dir));
-    };
-});
-
-// Prepare the console
-const readline = require('node:readline');
-const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-});
-const prompt = (query) => new Promise((resolve) => rl.question(query, resolve));
-
-// Windows specific patch im ticked off bro
-// Screw you microsoft :sob:
-if (process.platform === "win32") {
-    rl.on("SIGINT", function () {
-        process.emit("SIGINT");
-    });
-}
-
-// Is the console open?
-let consoleOpen = true;
 
 // Update Checking
 const { date } = require('#functions/core/date');
 const { getUpdateVersion } = require('#functions/core/update');
+const { gracefulShutdown } = require('#functions/core/powerCycle');
 const updateCheck = async function () {
     let latestVersion = await getUpdateVersion();
 
@@ -76,25 +34,19 @@ const updateCheck = async function () {
     }
 }
 
-/**
- * Graceful Shutdown of bot
- * Exit: Determines if the process exits immediately or not.
- * @param {String} cause 
- * @param {Boolean} exit 
- */
-const gracefulShutdown = async function (cause, exit) {
-    log.info(`\x1b[36m--------------------- Nex ${date.getFullYear()} ---------------------\x1b[0m`)
-    log.info(`Shutdown triggered by: ${cause}`)
-    log.info("Closing all apps...")
-    await close("apps");
-    await close("plugins");
-    await close("preload");
-    log.info("Shutting down.")
-    log.info(`\x1b[36m----------------------------------------------------\x1b[0m`)
-    if (exit) {
-        process.exit(0);
-    }
-}
+// Prepare the console
+const readline = require('node:readline');
+const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
+const prompt = (query) => new Promise((resolve) => rl.question(query, resolve));
+
+// Start loading
+const startLoad = Date.now();
+
+// Is the console open?
+let consoleOpen = true;
 
 // Export the app and wss
 module.exports = {
@@ -103,16 +55,91 @@ module.exports = {
     readline: rl,
     sourceDir: __dirname,
     getUpdateVersion,
-    gracefulShutdown
 }
 
-// Sigint / Sigterm (real)
-process.on('SIGINT', async () => {
-    await gracefulShutdown("Ctrl-C", true)
+// Process.on random unhandled stuff
+process.on('uncaughtException', async (error, origin) => {
+    try {
+        if (errorPolicy.uncaughtException === "warn") {
+            log.error("An uncaught exception has happened", error)
+            log.error(origin)
+            return;
+        }
+        if (errorPolicy.uncaughtException !== "continue") {
+            log.error(origin)
+            await log.fatal("An uncaught exception has happened.", error, 0x0000, true);
+            process.exit(1); // this shouldnt run but i have it
+        }
+    } catch {
+        process.exit(2); // this shouldnt run but i have it
+    }
+});
+process.on("unhandledRejection", async (error, origin) => {
+    try {
+        if (errorPolicy.unhandledRejection === "warn") {
+            log.error("An uncaught promised rejection has happened", error)
+            log.error(origin)
+            return;
+        }
+        if (errorPolicy.unhandledRejection !== "continue") {
+            log.error(origin)
+            await log.fatal("An uncaught promised rejection has happened.", error, 0x0000, true);
+            process.exit(1); // this shouldnt run but i have it
+        }
+    } catch {
+        process.exit(2); // this shouldnt run but i have it
+    }
 })
-process.on('SIGTERM', async () => {
-    await gracefulShutdown("OS Termination", true)
-})
+
+const init = async function () {
+
+    log.event("Initializing...")
+    if (env.error) {
+        await log.fatal("No .env file exists. Please make it!", env.error, 0x0000, true);
+        process.exit(1); // this shouldnt run but i have it
+    };
+
+    // Set the directory
+    try {
+        process.chdir(__dirname);
+    } catch (error) {
+        await log.fatal("Could not set the directory.", error, 0x0000, true);
+        process.exit(1); // this shouldnt run but i have it
+    };
+
+    log.info("Starting Server");
+
+    // Make sure directories exist lol
+    const fs = require('node:fs');
+    const path = require('path');
+    const dirs = ["plugins", "preload", "console", "databases", "apps"];
+    dirs.forEach((dir) => {
+        if (!fs.existsSync(dir)) {
+            log.info(`Creating directory: ${dir}`);
+            fs.mkdirSync(path.join(__dirname, dir));
+        };
+    });
+
+    // Windows specific patch im ticked off bro
+    // Screw you microsoft :sob:
+    if (process.platform === "win32") {
+        rl.on("SIGINT", function () {
+            process.emit("SIGINT");
+        });
+    }
+
+    // Sigint / Sigterm (real)
+    process.on('SIGINT', async () => {
+        await gracefulShutdown("Ctrl-C", true)
+    })
+    process.on('SIGTERM', async () => {
+        await gracefulShutdown("OS Termination", true)
+    })
+
+    main().catch(async error => {
+        await log.fatal("Prism failed to initialize files.", error, 0x0001, true);
+    });
+}
 
 /**
  * Main function
@@ -120,6 +147,8 @@ process.on('SIGTERM', async () => {
  * what am i doing bro :sob:
  */
 const main = async () => {
+
+    log.event("Loading files...")
 
     // Load preload and plugins
     await load("preload");
@@ -142,7 +171,9 @@ const main = async () => {
     await asyncFunctions();
 }
 
-main();
+init().catch(async error => {
+    await log.fatal("Prism failed to start initializing.", error, 0x0000, true);
+});
 
 /**
  * Async Functions
@@ -153,7 +184,7 @@ const asyncFunctions = async function () {
     if (autoUpdate) {
         autoUpdateCheck();
     } else {
-        log.info( "Automatic update checking disabled.")
+        log.info("Automatic update checking disabled.")
     }
 }
 

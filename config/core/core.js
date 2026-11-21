@@ -8,13 +8,23 @@ module.exports = {
         second: "numeric",
     },
     verbose: true, // Extra Logging Info
-    autoUpdate: false,
+    autoUpdate: true,
     frameName: "Prism", // Unified Framework Name
-    frameVer: "0.7.0-dev", // Unified Framework version
-    frameID: 15, // Framework version ID
+    frameVer: "0.7.1-dev", // Unified Framework version
+    frameID: 16, // Framework version ID
     updateURL: "https://github.com/Nexint-Labs/NexAPIv2/",
     updateSource: "https://raw.githubusercontent.com/Nexint-Labs/NexAPIv2/refs/heads/main/ver.txt",
 
     restart: "start start.bat", // Restart command. This would be different on a linux based system. It would be "sh start.sh".
     // args: ['--', 'bash', '-c', "./start.sh"],
+
+    /*
+    It's in your best interest to not change this unless you know what you're doing.
+    Please don't change this :sob:
+    Types: warn, shutdown, continue
+    */
+    errorPolicy: {
+        uncaughtException: "shutdown",
+        unhandledRejection: "warn",
+    }
 }
