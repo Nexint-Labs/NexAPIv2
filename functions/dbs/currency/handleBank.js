@@ -142,8 +142,8 @@ const delBank = async function (userId, name) {
             if (!rowCount) {
                 return {
                     error: true,
-                    status: 410,
-                    title: "Gone",
+                    status: 404,
+                    title: "Not Found",
                     desc: `${name} is not registered.`,
                     content: {
                         userId: userId,
@@ -152,7 +152,8 @@ const delBank = async function (userId, name) {
                 }
             }
             return {
-                userId, name
+                userId,
+                name
             }
         })
 

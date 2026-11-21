@@ -136,8 +136,8 @@ const delMisc = async function (userId, name) {
             if (!rowCount) {
                 return {
                     error: true,
-                    status: 410,
-                    title: "Gone",
+                    status: 404,
+                    title: "Not Found",
                     desc: `${name} is not registered.`,
                     content: {
                         userId: userId,

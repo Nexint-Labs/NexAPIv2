@@ -98,7 +98,7 @@ const addBalance = async function (userId, name, t) {
                 status: 200,
                 title: "Already created.",
                 desc: `${name} is already registered.`,
-                content: user,
+                content: result,
             };
         }
         return {
@@ -141,8 +141,8 @@ const delBalance = async function (userId, name) {
             if (!rowCount) {
                 return {
                     error: true,
-                    status: 410,
-                    title: "Gone",
+                    status: 404,
+                    title: "Not Found",
                     desc: `${name} is not registered.`,
                     content: {
                         userId: userId,

@@ -11,8 +11,8 @@ const convNameToID = async function (name) {
 
             return {
                 error: true,
-                status: 410,
-                title: "Gone",
+                status: 404,
+                title: "Not Found",
                 desc: `Balance user does not exist.`,
                 content: null
             }
