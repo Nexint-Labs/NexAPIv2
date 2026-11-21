@@ -1,0 +1,9 @@
+-----------------Info-------------------
+|  These logs are for debug purposes.  |
+|    Logging is optional with args.    |
+|    Logs are turned on by default.    |
+----------------------------------------
+[SUCCESS] [3:41:41 PM] Listening at port 3000
+[SUCCESS] [3:41:41 PM] Done in 2.693 seconds!
+[WARN] [3:41:41 PM] You're running an experimental version of Prism! (You are 1 commits ahead)
+[WARN] [3:41:41 PM] Here be dragons!~
