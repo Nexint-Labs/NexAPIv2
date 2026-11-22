@@ -1,6 +1,5 @@
 const express = require("express");
 const bodyParser = require('body-parser');
-const { token } = require("#config/core/api");
 const { app } = require("#apps/web");
 const { getAdvert, addAdvert, delAdvert } = require("#functions/dbs/advert/handleAdvert");
 const router = express.Router()
@@ -23,68 +22,46 @@ router.get('/', jsonParser, async (req, res) => {
 
 router.post('/', jsonParser, async (req, res) => {
 
+    // Authenticate
+    if (!authReq(req, res)) return;
+
     // Get the request
     let request = req.body;
-
-    // Authenticate?
-    if (request.token != token) {
-        res.status(403).json({
-            error: "Insufficient Permissions",
-            desc: "You are not authenticated",
-            content: null,
-        });
-        return;
-    }
 
     // See if text even exists
     const { text } = request;
     if (text) {
         res.status(400).json({
-            error: "Malformed Request",
-            desc: "Your request does not contain the required information. (text)",
+            error: true,
+            status: 400,
+            title: "Malformed Request,",
+            desc: "Your request does not contain the required information.",
             content: null,
         })
         return;
     }
 
     const result = await addAdvert(text)
-    if (result.error) {
-        res.status(result.status).json({
-            error: result.title,
-            desc: result.desc,
-            content: result.content,
-        })
-        return;
-    }
-    res.status(result.status).json({
-        error: false,
-        desc: result.desc,
-        content: result.content,
-    })
+    res.status(result.status).json(result)
     return;
 })
 
 router.delete('/', jsonParser, async (req, res) => {
 
+    // Authenticate
+    if (!authReq(req, res)) return;
+
     // Get the request
     let request = req.body;
-
-    // Authenticate?
-    if (request.token != token) {
-        res.status(403).json({
-            error: "Insufficient Permissions",
-            desc: "You are not authenticated",
-            content: null,
-        });
-        return;
-    }
 
     // See if text even exists
     const { text } = request;
     if (!text) {
         res.status(400).json({
-            error: "Malformed Request",
-            desc: "Your request does not contain the required information. (text)",
+            error: true,
+            status: 400,
+            title: "Malformed Request,",
+            desc: "Your request does not contain the required information.",
             content: null,
         })
         return;
@@ -92,19 +69,8 @@ router.delete('/', jsonParser, async (req, res) => {
 
     // Remove the advertisement
     const result = await delAdvert(text)
-    if (result.error) {
-        res.status(result.status).json({
-            error: result.title,
-            desc: result.desc,
-            content: result.content,
-        })
-        return;
-    }
-    res.status(result.status).json({
-        error: false,
-        desc: result.desc,
-        content: result.content,
-    })
+    res.status(result.status).json(result)
+    return;
 })
 
 router.mountPath = '/advert';

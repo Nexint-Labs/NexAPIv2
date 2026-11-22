@@ -233,8 +233,160 @@ const getBank = async function (depth) {
     }
 }
 
+/**
+ * Change your bank account!
+ * @param {String} userId 
+ * @param {String} name 
+ * @param {Number} amount 
+ * @param {Transaction} t
+ * @param {Boolean} forced 
+ * @param {Number} required // If the user doesn't have at least this amount, reject.
+ * @returns 
+ */
+const updateBank = async function (userId, name, amount, t, forced, required) {
+
+    if (typeof amount !== "number" || !Number.isFinite(amount)) {
+        return {
+            error: true,
+            status: 400,
+            title: "Invalid Amount",
+            desc: "The balance adjustment must be a finite number.",
+            content: null,
+        };
+    }
+
+    const processUpdate = async function (userId, amount, t, forced, required) {
+        const bal = await addBank(userId, name, t);
+
+        if (bal.error) {
+            return {
+                error: true,
+                status: bal.status,
+                title: bal.title,
+                desc: bal.desc,
+                content: bal.content,
+            };
+        }
+
+        const user = bal.content
+
+        if (required !== undefined && (!Number.isFinite(required) || required < 0)) {
+            return {
+                error: true,
+                status: 400,
+                title: "Invalid Amount",
+                desc: "Required bank balance does not exist.",
+                content: user,
+            };
+
+        }
+
+        // if the value is less than zero
+        if (user.value + amount < 0 || (required !== undefined && user.value - required < 0)) {
+            if (forced) {
+                await user.update({
+                    value: 0
+                }, {
+                    transaction: t
+                })
+            } else {
+                return {
+                    error: true,
+                    status: 402,
+                    title: "Bank Balance Too Low",
+                    desc: "You do not have enough money.",
+                    content: user,
+                };
+
+            }
+        } else if (user.value + amount > user.maxValue) {
+            return {
+                error: true,
+                status: 409,
+                title: "Bank Capacity Exceeded",
+                desc: "Your bank does not have enough capacity.",
+                content: user,
+            };
+        } else {
+
+            await user.increment('value', {
+                by: amount,
+                transaction: t
+            });
+
+        }
+        await user.reload({
+            transaction: t,
+        });
+        return {
+            error: false,
+            user,
+        }
+    }
+
+    // Transaction safety, outside try-catch because I want errors to propagate :)
+    if (t) {
+        const result = await processUpdate(userId, amount, t, forced, required)
+        if (result.error) {
+            return {
+                error: true,
+                status: result.status,
+                title: result.title,
+                desc: result.desc,
+                content: result.content,
+            };
+        }
+
+        return {
+            error: false,
+            status: 200,
+            title: "Updated Balance.",
+            desc: `${name} has been updated.`,
+            content: result.user,
+        }
+    }
+    try {
+
+        const result = await currency.transaction(async t => {
+            return await processUpdate(userId, amount, t, forced, required)
+        })
+
+        if (result.error) {
+            return {
+                error: true,
+                status: result.status,
+                title: result.title,
+                desc: result.desc,
+                content: result.content,
+            };
+
+        }
+
+        return {
+            error: false,
+            status: 200,
+            title: "Updated Balance.",
+            desc: `${name} has been updated.`,
+            content: result.user,
+        }
+    } catch (error) {
+
+
+        log.error("A server error has happened while trying to update balance.", error)
+        return {
+            error: true,
+            status: 500,
+            title: "Server Error",
+            desc: "The server in question has faced a serious server error.",
+            content: null
+        }
+
+    }
+}
+
 module.exports = {
     addBank,
     delBank,
     getBank,
+    updateBank
 }

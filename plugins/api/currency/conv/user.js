@@ -1,32 +1,46 @@
 const express = require("express");
 const bodyParser = require('body-parser');
-const { token } = require("#config/core/api");
 const { app } = require("#apps/web");
 const { convNameToID } = require("#functions/dbs/currency/conv/balance");
+const { authReq } = require("#functions/api/auth");
 const router = express.Router()
 const jsonParser = bodyParser.json()
 
+// Version info
+router.get('/', jsonParser, async (req, res) => {
+
+    // Find all blacklists
+
+    // Return the blacklist
+    res.json({
+        name: "Converters",
+        desc: "Status of converters",
+        content: {
+            // 0 means offline, 1 means online
+            status: 1,
+            version: 2,
+        },
+        refreshDate: Date.now(),
+        error: false,
+    })
+})
+
 router.query('/convNameToID', jsonParser, async (req, res) => {
+
+    // Authenticate
+    if (!authReq(req, res)) return;
 
     // Get the request
     let request = req.body;
-
-    // Authenticate?
-    if (request.token != token) {
-        res.status(403).json({
-            error: "Insufficient Permissions",
-            desc: "You are not authenticated",
-            content: null,
-        });
-        return;
-    }
 
     // See if the user ID even exists
     const { name } = request;
     if (!name) {
         res.status(400).json({
-            error: "Malformed Request",
-            desc: "Your request does not contain the required information. (name)",
+            error: true,
+            status: 400,
+            title: "Malformed Request,",
+            desc: "Your request does not contain the required information.",
             content: null,
         })
         return;
@@ -36,19 +50,8 @@ router.query('/convNameToID', jsonParser, async (req, res) => {
     const result = await convNameToID(name);
 
     // Return the notification list
-    if (result.error) {
-        res.status(result.status).json({
-            error: result.title,
-            desc: result.desc,
-            content: result.content,
-        })
-        return;
-    }
-    res.status(result.status).json({
-        error: false,
-        desc: result.desc,
-        content: result.content,
-    })
+    res.status(result.status).json(result)
+    return;
 })
 
 router.mountPath = '/currency';

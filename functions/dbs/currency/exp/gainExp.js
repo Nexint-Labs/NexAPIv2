@@ -3,6 +3,13 @@ const { log } = require("#functions/core/log.mjs");
 const { miscinfo, currency } = require("#preload/db/currency");
 const { addMisc } = require("../handleMisc");
 
+
+/**
+ * Gain experience!
+ * @param {String} userId 
+ * @param {String} name 
+ * @returns 
+ */
 const expGain = async function (userId, name) {
     try {
         const xpGained = Math.floor(Math.random() * expMaxGain) + 1;
@@ -22,7 +29,13 @@ const expGain = async function (userId, name) {
 
             const user = misc.content
 
-            user.exp += xpGained;
+            await user.increment('exp', {
+                by: xpGained,
+                transaction: t
+            });
+            await user.reload({
+                transaction: t,
+            });
 
             let newLevel = 0;
             if (user.exp >= user.nextLevel) {

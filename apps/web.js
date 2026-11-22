@@ -3,6 +3,7 @@ const WebSocket = require('ws');
 const { createServer } = require('http');
 const express = require('express');
 const { log } = require('#functions/core/log.mjs');
+const { token } = require('#config/core/api');
 
 const app = express();
 const server = createServer(app);
@@ -18,6 +19,13 @@ module.exports = {
     wss,
 
     async execute() {
+
+        if (typeof token !== "string" || token.length === 0) {
+            log.error("Server token is missing or invalid.", new Error("Token is missing or does not exist."));
+        } else if (token.length < 8) {
+            log.error("Token length is not big enough.", new Error("Token is too small."));
+        }
+        
         await new Promise((resolve, reject) => {
             const onError = (error) => {
                 server.off("listening", onListening);

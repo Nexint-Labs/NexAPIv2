@@ -89,7 +89,7 @@ const delAdvert = async function (name) {
                     status: 404,
                     title: "Not Found",
                     desc: `${name} is already gone.`,
-                    content: user,
+                    content: null,
                 }
             }
             return {
@@ -112,8 +112,8 @@ const delAdvert = async function (name) {
         return {
             error: false,
             status: 200,
-            title: "Deleted Blacklist.",
-            desc: `${name} has been removed from the blacklist.`,
+            title: "Deleted Advertisement.",
+            desc: `${name} has been removed from advertisements.`,
             content: result,
         }
     } catch (error) {

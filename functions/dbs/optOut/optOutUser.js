@@ -1,4 +1,5 @@
 const { log } = require("#functions/core/log.mjs");
+const { currency } = require("#preload/db/currency");
 const { optOut, optOutDb } = require("#preload/db/optOut");
 const { Op } = require("sequelize");
 
@@ -87,11 +88,39 @@ const addOptOut = async function (userId, name) {
             const { delBank } = require("../currency/handleBank");
             const { delNotif } = require("../notif/notifUser");
             const { delMisc } = require("../currency/handleMisc");
+            const { delAction } = require("../action/handleAction");
+            const { delJob } = require("../currency/handleJobs");
+            const { delMulti } = require("../currency/handleMulti");
 
-            await delNotif(userId);
-            await delBalance(userId, name);
-            await delBank(userId, name);
-            await delMisc(userId, name);
+            const delCurrency = async function (userId, name) {
+                const result = await currency.transaction(async t => {
+                    await delBalance(userId, name, t);
+                    await delMulti(userId, null, t);
+                    await delJob(userId, name, t);
+                    return null;
+                })
+                return {
+                    error: false,
+                    status: 200,
+                    title: `Delete done!`,
+                    desc: `Deleted currency for ${name}`,
+                    content: result
+                }
+            }
+
+            const results = [
+                await delNotif(userId),
+                await delBank(userId, name),
+                await delMisc(userId, name),
+                await delAction(userId),
+                await delCurrency(userId, name)
+            ];
+
+            for (const result of results) {
+                if (result.error && result.status !== 404) {
+                    throw new Error(result.desc);
+                }
+            }
 
             if (!created) {
                 return {

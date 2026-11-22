@@ -1,8 +1,8 @@
 const express = require("express");
 const bodyParser = require('body-parser');
-const { token } = require("#config/core/api");
 const { getBlacklist, addBlacklist, delBlacklist } = require("#functions/dbs/blacklist/handleBlacklist");
 const { app } = require("#apps/web");
+const { authReq } = require("#functions/api/auth");
 const router = express.Router()
 const jsonParser = bodyParser.json()
 
@@ -28,68 +28,46 @@ router.get('/', jsonParser, async (req, res) => {
 
 router.post('/', jsonParser, async (req, res) => {
 
+    // Authenticate
+    if (!authReq(req, res)) return;
+
     // Get the request
     let request = req.body;
-
-    // Authenticate?
-    if (request.token != token) {
-        res.status(403).json({
-            error: "Insufficient Permissions",
-            desc: "You are not authenticated",
-            content: null,
-        });
-        return;
-    }
 
     // See if the user ID even exists
     const { userId, name } = request;
     if (!userId || !name) {
         res.status(400).json({
-            error: "Malformed Request",
-            desc: "Your request does not contain the required information. (userID, name)",
+            error: true,
+            status: 400,
+            title: "Malformed Request,",
+            desc: "Your request does not contain the required information.",
             content: null,
         })
         return;
     }
 
     const result = await addBlacklist(userId, name)
-    if (result.error) {
-        res.status(result.status).json({
-            error: result.title,
-            desc: result.desc,
-            content: result.content,
-        })
-        return;
-    }
-    res.status(result.status).json({
-        error: false,
-        desc: result.desc,
-        content: result.content,
-    })
+    res.status(result.status).json(result)
     return;
 })
 
 router.delete('/', jsonParser, async (req, res) => {
 
+    // Authenticate
+    if (!authReq(req, res)) return;
+
     // Get the request
     let request = req.body;
-
-    // Authenticate?
-    if (request.token != token) {
-        res.status(403).json({
-            error: "Insufficient Permissions",
-            desc: "You are not authenticated",
-            content: null,
-        });
-        return;
-    }
 
     // See if the user ID even exists
     const { userId, name } = request;
     if (!userId || !name) {
         res.status(400).json({
-            error: "Malformed Request",
-            desc: "Your request does not contain the required information. (userID)",
+            error: true,
+            status: 400,
+            title: "Malformed Request,",
+            desc: "Your request does not contain the required information.",
             content: null,
         })
         return;
@@ -97,19 +75,8 @@ router.delete('/', jsonParser, async (req, res) => {
 
     // Remove the user
     const result = await delBlacklist(userId, name)
-    if (result.error) {
-        res.status(result.status).json({
-            error: result.title,
-            desc: result.desc,
-            content: result.content,
-        })
-        return;
-    }
-    res.status(result.status).json({
-        error: false,
-        desc: result.desc,
-        content: result.content,
-    })
+    res.status(result.status).json(result)
+    return;
 })
 
 router.mountPath = '/blacklist';

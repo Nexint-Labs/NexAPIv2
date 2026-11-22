@@ -41,9 +41,6 @@ const addBlacklist = async function (userId, name) {
                     user: name
                 },
                 {
-                    where: {
-                        userid: userId,
-                    },
                     transaction: t
                 },
             );

@@ -107,9 +107,6 @@ const items = currency.define('items', {
     }]
 });
 
-// Placeholder alias lol
-const itemsdb = items
-
 const multi = currency.define('multi', {
     userId: {
         type: Sequelize.STRING,
@@ -140,7 +137,6 @@ module.exports = {
     miscinfo,
     work,
     items,
-    itemsdb,
     multi,
 
     async execute() {

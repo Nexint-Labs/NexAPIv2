@@ -1,6 +1,12 @@
 const { balance } = require("#preload/db/currency");
 
 
+
+/**
+ * Convert name to ID
+ * @param {String} name 
+ * @returns 
+ */
 const convNameToID = async function (name) {
     try {
         let balanceUser = await balance.findOne({

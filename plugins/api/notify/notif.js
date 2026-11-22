@@ -1,8 +1,8 @@
 const express = require("express");
 const bodyParser = require('body-parser');
-const { token } = require("#config/core/api");
 const { app } = require("#apps/web");
 const { getNotif, delNotif, addNotif } = require("#functions/dbs/notif/notifUser");
+const { authReq } = require("#functions/api/auth");
 const router = express.Router()
 const jsonParser = bodyParser.json()
 
@@ -22,25 +22,20 @@ router.get('/', jsonParser, async (req, res) => {
 
 router.query('/', jsonParser, async (req, res) => {
 
+    // Authenticate
+    if (!authReq(req, res)) return;
+
     // Get the request
     let request = req.body;
-
-    // Authenticate?
-    if (request.token != token) {
-        res.status(403).json({
-            error: "Insufficient Permissions",
-            desc: "You are not authenticated",
-            content: null,
-        });
-        return;
-    }
 
     // See if the user ID even exists
     const { userId, refresh, viewAll } = request;
     if (!userId || refresh === undefined) {
         res.status(400).json({
-            error: "Malformed Request",
-            desc: "Your request does not contain the required information. (userID, refresh)",
+            error: true,
+            status: 400,
+            title: "Malformed Request,",
+            desc: "Your request does not contain the required information.",
             content: null,
         })
         return;
@@ -50,85 +45,52 @@ router.query('/', jsonParser, async (req, res) => {
     const result = await getNotif(userId, refresh, viewAll);
 
     // Return the notification list
-    if (result.error) {
-        res.status(result.status).json({
-            error: result.title,
-            desc: result.desc,
-            content: result.content,
-        })
-        return;
-    }
-    res.status(result.status).json({
-        error: false,
-        desc: result.desc,
-        content: result.content,
-    })
+    res.status(result.status).json(result)
+    return;
 })
 
 router.post('/', jsonParser, async (req, res) => {
 
+    // Authenticate
+    if (!authReq(req, res)) return;
+
     // Get the request
     let request = req.body;
-
-    // Authenticate?
-    if (request.token != token) {
-        res.status(403).json({
-            error: "Insufficient Permissions",
-            desc: "You are not authenticated",
-            content: null,
-        });
-        return;
-    }
 
     // See if the user ID even exists
     const { userId, refresh } = request;
     if (!userId || refresh === undefined) {
         res.status(400).json({
-            error: "Malformed Request",
-            desc: "Your request does not contain the required information. (userID, refresh)",
+            error: true,
+            status: 400,
+            title: "Malformed Request,",
+            desc: "Your request does not contain the required information.",
             content: null,
         })
         return;
     }
 
     const result = await addNotif(userId, refresh)
-    if (result.error) {
-        res.status(result.status).json({
-            error: result.title,
-            desc: result.desc,
-            content: result.content,
-        })
-        return;
-    }
-    res.status(result.status).json({
-        error: false,
-        desc: result.desc,
-        content: result.content,
-    })
+    res.status(result.status).json(result)
     return;
 })
 
 router.delete('/', jsonParser, async (req, res) => {
 
+    // Authenticate
+    if (!authReq(req, res)) return;
+
     // Get the request
     let request = req.body;
-
-    // Authenticate?
-    if (request.token != token) {
-        res.status(403).json({
-            error: "Insufficient Permissions",
-            desc: "You are not authenticated",
-            content: null,
-        });
-        return;
-    }
 
     // See if the user ID even exists
     const { userId } = request;
     if (!userId) {
         res.status(400).json({
-            error: "Malformed Request",
-            desc: "Your request does not contain the required information. (userID, refresh)",
+            error: true,
+            status: 400,
+            title: "Malformed Request,",
+            desc: "Your request does not contain the required information.",
             content: null,
         })
         return;
@@ -136,19 +98,8 @@ router.delete('/', jsonParser, async (req, res) => {
 
     // Remove the user
     const result = await delNotif(userId)
-    if (result.error) {
-        res.status(result.status).json({
-            error: result.title,
-            desc: result.desc,
-            content: result.content,
-        })
-        return;
-    }
-    res.status(result.status).json({
-        error: false,
-        desc: result.desc,
-        content: result.content,
-    })
+    res.status(result.status).json(result)
+    return;
 })
 
 router.mountPath = '/notifs';
