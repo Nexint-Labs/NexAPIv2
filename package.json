@@ -18,6 +18,7 @@
     "linkify-it": "^6.1.0",
     "profanease": "^2.0.3",
     "sequelize": "^6.37.8",
+    "sqlite3": "^6.0.1",
     "ws": "^8.23.0"
   },
   "imports": {
