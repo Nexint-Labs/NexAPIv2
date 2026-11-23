@@ -10,10 +10,10 @@ module.exports = {
     verbose: false, // Extra Logging Info
     autoUpdate: true,
     frameName: "Prism", // Unified Framework Name
-    frameVer: "0.7.1-dev", // Unified Framework version
-    frameID: 17, // Framework version ID
+    frameVer: "0.7.2-dev", // Unified Framework version
+    frameID: 18, // Framework version ID
     updateURL: "https://github.com/Nexint-Labs/NexAPIv2/",
-    updateSource: "https://raw.githubusercontent.com/Nexint-Labs/NexAPIv2/refs/heads/main/ver.txt",
+    updateSource: "https://raw.githubusercontent.com/Nexint-Labs/NexAPIv2/refs/heads", // prolly dont change this unless you know what ur doing
 
     restart: "start start.bat", // Restart command. This would be different on a linux based system. It would be "sh start.sh".
     // args: ['--', 'bash', '-c', "./start.sh"],
