@@ -1,9 +1,11 @@
 const express = require("express");
 const bodyParser = require('body-parser');
 const { app } = require("#apps/web");
+const { authReq } = require("#functions/api/auth");
 const { getAdvert, addAdvert, delAdvert } = require("#functions/dbs/advert/handleAdvert");
 const router = express.Router()
 const jsonParser = bodyParser.json()
+
 
 router.get('/', jsonParser, async (req, res) => {
 
@@ -30,7 +32,7 @@ router.post('/', jsonParser, async (req, res) => {
 
     // See if text even exists
     const { text } = request;
-    if (text) {
+    if (!text) {
         res.status(400).json({
             error: true,
             status: 400,
