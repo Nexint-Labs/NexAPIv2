@@ -101,7 +101,7 @@ const work = async function (userId, name) {
             let newWage = 0;
             let raise = 0
 
-            if (job.workCount >= jobs[job.jobId].promo) {
+            if (job.workCount % jobs[job.jobId].promo == 0) {
                 const oldWage = Number(job.wage);
 
                 newWage = Math.ceil(oldWage * 1.2);
@@ -112,7 +112,6 @@ const work = async function (userId, name) {
 
                 raise = newWage - oldWage;
                 await job.update({
-                    workCount: job.workCount - jobs[job.jobId].promo,
                     wage: newWage
                 }, {
                     transaction: t
