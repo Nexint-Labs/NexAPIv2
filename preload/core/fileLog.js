@@ -1,8 +1,11 @@
-const { logDir, logFormat } = require("#config/core/log");
+const { logDir } = require("#config/core/log");
 const fs = require("node:fs");
 const path = require("node:path");
 const { log, forceShutdown } = require("../../functions/core/fatalShutdown.mjs");
 const { frameName } = require("#config/core/core");
+
+let logFormat = process.env.PRISM_LOG_FORMAT;
+
 
 let outputFileStream = {
     /**
@@ -19,6 +22,9 @@ let outputFileStream = {
  * Load the initial logger.
  */
 const loadLogFile = async function () {
+    if (outputFileStream instanceof fs.WriteStream && !outputFileStream.destroyed) {
+        return;
+    }
     const dirs = [logDir];
     dirs.forEach((dir) => {
         if (!fs.existsSync(dir)) {
@@ -47,11 +53,13 @@ const loadLogFile = async function () {
         log.error("File logging failed:", err);
         forceShutdown(`File Logging failed, ${frameName} is in an unstable state.`)
     });
-    outputFileStream.write(`-----------------Info-------------------\n`);
-    outputFileStream.write(`|  These logs are for debug purposes.  |\n`);
-    outputFileStream.write(`|    Logging is optional with args.    |\n`);
-    outputFileStream.write(`|    Logs are turned on by default.    |\n`);
-    outputFileStream.write(`----------------------------------------\n`);
+    if (!process.send) {
+        outputFileStream.write(`-----------------Info-------------------\n`);
+        outputFileStream.write(`|  These logs are for debug purposes.  |\n`);
+        outputFileStream.write(`|    Logging is optional with args.    |\n`);
+        outputFileStream.write(`|    Logs are turned on by default.    |\n`);
+        outputFileStream.write(`----------------------------------------\n`);
+    }
 }
 
 /**
@@ -79,8 +87,7 @@ module.exports = {
 
         const stream = outputFileStream;
 
-        if (stream.writableFinished || stream.destroyed) {
-
+        if (stream.writableFinished || stream.writableEnded || stream.destroyed) {
             outputFileStream = {
                 write() {
                     return null;
