@@ -1,4 +1,4 @@
 module.exports = {
     pluginName: "NexAPI", // Plugin Name lol
-    pluginVer: "0.0.1-prod"
+    pluginVer: "0.1.0-prod"
 }
