@@ -136,6 +136,24 @@ const delAdvert = async function (name) {
 const getAdvert = async function () {
     try {
         const adverts = await advert.findAll();
+        advert.push({
+            name: "Tip: Link your Minecraft to Discord to unlock expanded bot features! play.spacelink.cc"
+        })
+        advert.push({
+            name: "Tip: This bot has an entire currency system! Check it out :P"
+        })
+        advert.push({
+            name: "Hope you have a good day :)"
+        })
+        advert.push({
+            name: "Miku Supremacy."
+        })
+        advert.push({
+            name: "Teto Supremacy."
+        })
+        advert.push({
+            name: "Neru Supremacy."
+        })
 
         return {
             error: false,
