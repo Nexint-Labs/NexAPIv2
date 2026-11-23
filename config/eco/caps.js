@@ -1,3 +1,3 @@
 module.exports = {
-    softEcoCap: 1.05,
+    softEcoCap: 25000000,
 }
