@@ -42,7 +42,12 @@ const clientAction = async function (action, target = "all") {
                     return;
                 }
 
-                if (data.type !== (action === "info" ? "name" : action)) return;
+                const expectedType = {
+                    info: "name",
+                    memory: "memory"
+                }[action] ?? action;
+
+                if (data.type !== expectedType) return;
 
                 clearTimeout(timeout);
                 ws.off("message", onMessage);
@@ -64,19 +69,39 @@ const clientAction = async function (action, target = "all") {
             ws.on("message", onMessage);
             ws.once("close", onClose);
 
+            const requestType = {
+                info: "getName",
+                memory: "getMemory"
+            }[action] ?? action;
+
             ws.send(JSON.stringify({
-                type: action === "info" ? "getName" : action
+                type: requestType
             }), error => {
                 if (error) onClose();
             });
         })
     ));
 
+    const mb = bytes => (bytes / 1024 ** 2).toFixed(2);
+
     results.forEach(result => {
-        if (action === "info") {
-            log.info(`Client ${result.number}: ${result.status} (${result.latency === null ? "N/A" : `${result.latency}ms`})`);
+        if (action === "memory" && result.status && typeof result.status === "object") {
+            const m = result.status;
+
+            log.info(
+                `Client ${result.number} | ` +
+                `PID: ${m.pid} | ` +
+                `RSS: ${mb(m.rss)} MB | ` +
+                `Heap: ${mb(m.heapUsed)} MB / ${mb(m.heapTotal)} MB | ` +
+                `External: ${mb(m.external)} MB | ` +
+                `Uptime: ${Math.floor(m.uptime)}s | ` +
+                `Latency: ${result.latency}ms`
+            );
         } else {
-            log.info(`Client ${result.number}: ${action} - ${result.status}`);
+            log.info(
+                `Client ${result.number}: ${action} - ${result.status}` +
+                ` (${result.latency === null ? "N/A" : `${result.latency}ms`})`
+            );
         }
     });
 }
@@ -95,6 +120,7 @@ module.exports = {
             '/clients restart <number|all>: Restart client(s)!',
             '/clients refresh <number|all>: Refresh client(s)!',
             '/clients reload <number|all>: Reload client(s)!',
+            '/clients memory <number|all>: Check client memory usage!'
         ];
     },
     // Example of a command in the CLI (command line) of the bot.
@@ -119,8 +145,9 @@ module.exports = {
 
                         log.info(`\x1b[36m--------------------- Nex ${date.getFullYear()} ---------------------\x1b[0m`)
                         break;
-
-
+                    case "memory":
+                        await clientAction("memory", command.split(" ")[2]?.toLowerCase());
+                        break;
                     case "restart":
                     case "refresh":
                     case "reload":
@@ -133,6 +160,7 @@ module.exports = {
                         log.info(`restart <number|all>: Restart client(s)!`)
                         log.info(`refresh <number|all>: Refresh client(s)!`)
                         log.info(`reload <number|all>: Reload client(s)!`)
+                        log.info(`memory <number|all>: Memory of client(s)!`)
                         log.info(`\x1b[36m--------------------- Nex ${date.getFullYear()} ---------------------\x1b[0m`)
                 }
                 return true;
