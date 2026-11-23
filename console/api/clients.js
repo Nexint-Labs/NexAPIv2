@@ -146,7 +146,9 @@ module.exports = {
                         log.info(`\x1b[36m--------------------- Nex ${date.getFullYear()} ---------------------\x1b[0m`)
                         break;
                     case "memory":
+                        log.info(`\x1b[36m---------------------- Memory ----------------------\x1b[0m`)
                         await clientAction("memory", command.split(" ")[2]?.toLowerCase());
+                        log.info(`\x1b[36m--------------------- Nex ${date.getFullYear()} ---------------------\x1b[0m`)
                         break;
                     case "restart":
                     case "refresh":
