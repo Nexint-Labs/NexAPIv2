@@ -41,7 +41,7 @@ const addBank = async function (userId, name, t) {
             defaults: {
                 name: name,
                 value: 0,
-                maxValue: 1,
+                maxValue: 1000000,
             },
             transaction: t
         })

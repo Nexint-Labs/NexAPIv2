@@ -62,11 +62,20 @@ const close = async function (dir) {
 
             // Load the help menu?
             try {
-                const app = require(path.join(process.cwd(), dir, file));
-                if ('close' in app) {
-                    await app.close()
+                const filename = require.resolve(path.join(process.cwd(), dir, file));
+                const cached = require.cache[filename];
+
+                if (!cached || !cached.loaded) {
+                    continue;
+                }
+
+                const app = cached.exports;
+
+                if (typeof app.close === "function") {
+                    await app.close();
+
                     if (verbose) {
-                        log.info(`Closed file: ${path.join(dir, file)}`)
+                        log.info(`Closed file: ${path.join(dir, file)}`);
                     }
                 }
             } catch (error) {
@@ -103,7 +112,7 @@ const forceShutdown = async function (cause) {
 
     log.info(`\x1b[36m--------------------- Nex ${date.getFullYear()} ---------------------\x1b[0m`)
     log.event(`Forced Shutdown triggered by: ${cause}`)
-    log.info("Closing all apps...")
+    log.event("Closing all apps...")
     try {
         let success = true;
         let dirs = ["apps", "plugins", "preload"];
@@ -121,7 +130,7 @@ const forceShutdown = async function (cause) {
         log.error("Prism could not be force shut down properly.", error)
         process.exit(1);
     }
-    log.info("Shutting down.")
+    log.event("Shutting down.")
     log.info(`\x1b[36m----------------------------------------------------\x1b[0m`)
     process.exit(1);
 }

@@ -1,7 +1,7 @@
 const fs = require("node:fs");
 const path = require('path');
 const { log } = require("./log.mjs");
-const { verbose } = require("#config/core/core");
+const { verbose, errorPolicy } = require("#config/core/core");
 const { forceShutdown } = require("./fatalShutdown.mjs");
 
 
@@ -28,9 +28,18 @@ const load = async function (dir) {
                     }
                 }
             } catch (error) {
-                log.error("Failed to load files.")
-                log.error(`Problematic file: ${path.join(dir, file)}`, error)
-                await forceShutdown("Failed to load files.")
+
+                if (errorPolicy.uncaughtException === "continue") {
+                    continue;
+                } else if (errorPolicy.uncaughtException === "warn") {
+                    log.error("Failed to load files.")
+                    log.error(`Problematic file: ${path.join(dir, file)}`, error)
+                    continue;
+                } else {
+                    log.error("Failed to load files.")
+                    log.error(`Problematic file: ${path.join(dir, file)}`, error)
+                    await forceShutdown("Failed to load files.")
+                }
             }
         }
     }
@@ -65,9 +74,17 @@ const loadConsole = async function (dir, command) {
                     return true
                 }
             } catch (error) {
-                log.error("Failed to load console files.")
-                log.error(`Problematic file: ${path.join(dir, file)}`, error)
-                await forceShutdown("Failed to load console files.")
+                if (errorPolicy.uncaughtException === "continue") {
+                    continue;
+                } else if (errorPolicy.uncaughtException === "warn") {
+                    log.error("Failed to load console files.")
+                    log.error(`Problematic file: ${path.join(dir, file)}`, error)
+                    continue;
+                } else {
+                    log.error("Failed to load console files.")
+                    log.error(`Problematic file: ${path.join(dir, file)}`, error)
+                    await forceShutdown("Failed to load console files.")
+                }
             }
         }
     }
@@ -96,9 +113,17 @@ const loadHelp = async function (dir) {
                     helpArray = helpArray.concat(await help.help())
                 }
             } catch (error) {
-                log.error("Failed to load help menu.")
-                log.error(`Problematic file: ${path.join(dir, file)}`, error)
-                await forceShutdown("Failed to load help menu")
+                if (errorPolicy.uncaughtException === "continue") {
+                    continue;
+                } else if (errorPolicy.uncaughtException === "warn") {
+                    log.error("Failed to load help menu.")
+                    log.error(`Problematic file: ${path.join(dir, file)}`, error)
+                    continue;
+                } else {
+                    log.error("Failed to load help menu.")
+                    log.error(`Problematic file: ${path.join(dir, file)}`, error)
+                    await forceShutdown("Failed to load help menu")
+                }
             }
         }
     }
@@ -136,9 +161,14 @@ const close = async function (dir) {
                     }
                 }
             } catch (error) {
-                log.error("Failed to close app.")
-                log.error(`Problematic file: ${path.join(dir, file)}`, error)
                 success = false
+
+                if (errorPolicy.uncaughtException === "continue") {
+                    continue;
+                } else {
+                    log.error("Failed to close app.")
+                    log.error(`Problematic file: ${path.join(dir, file)}`, error)
+                }
             }
         }
     }
@@ -169,9 +199,18 @@ const refresh = async function (dir) {
                     }
                 }
             } catch (error) {
-                log.error("Failed to refresh app.")
-                log.error(`Problematic file: ${path.join(dir, file)}`, error)
                 success = false
+                if (errorPolicy.uncaughtException === "continue") {
+                    continue;
+                } else if (errorPolicy.uncaughtException === "warn") {
+                    log.error("Failed to refresh app.")
+                    log.error(`Problematic file: ${path.join(dir, file)}`, error)
+                    continue;
+                } else {
+                    log.error("Failed to refresh app.")
+                    log.error(`Problematic file: ${path.join(dir, file)}`, error)
+                    await forceShutdown("Failed to refresh app.")
+                }
             }
         }
     }

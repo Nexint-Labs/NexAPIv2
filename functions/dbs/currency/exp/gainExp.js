@@ -1,6 +1,7 @@
 const { expMaxGain } = require("#config/eco/currency");
 const { log } = require("#functions/core/log.mjs");
 const { miscinfo, currency } = require("#preload/db/currency");
+const { addBank } = require("../handleBank");
 const { addMisc } = require("../handleMisc");
 
 
@@ -39,6 +40,21 @@ const expGain = async function (userId, name) {
 
             let newLevel = 0;
             if (user.exp >= user.nextLevel) {
+                const result = await addBank(userId, name, t);
+                if(result.error){
+                    throw result
+                }
+                const bank = result.content;
+
+                await bank.update(
+                    {
+                        maxValue: Math.floor(bank.maxValue * 1.2)
+                    },
+                    {
+                        transaction: t
+                    },
+                );
+
                 user.exp = 0;
                 user.level += 1;
                 user.nextLevel = Math.floor(
@@ -56,9 +72,7 @@ const expGain = async function (userId, name) {
                     nextLevel: user.nextLevel,
                 },
                 {
-                    where: {
-                        userId: userId,
-                    }, transaction: t
+                    transaction: t
                 },
             );
             return {
@@ -87,6 +101,9 @@ const expGain = async function (userId, name) {
             content: result,
         };
     } catch (error) {
+        if (error.error) {
+            return error
+        }
 
 
         log.error("A server error has happened while trying to gain exp.", error)

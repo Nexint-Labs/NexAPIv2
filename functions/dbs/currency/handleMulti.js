@@ -47,7 +47,7 @@ const addMulti = async function (userId, name, value, multiplier, expire, t) {
                 name: name,
                 value: value,
                 multi: multiplier,
-                expire: Date.now() + expire
+                expire: Date.now() + Number(expire)
             },
             transaction: t
         })
@@ -56,7 +56,7 @@ const addMulti = async function (userId, name, value, multiplier, expire, t) {
         if (!created) {
             await user.update(
                 {
-                    expire: Math.max(Date.now(), Number(user.expire)) + expire,
+                    expire: Math.max(Date.now(), Number(user.expire)) + Number(expire),
                     value: value,
                     multi: multiplier,
                 },
@@ -246,13 +246,10 @@ const getMulti = async function (userId, t) {
         let total = 1;
 
         for (const multi of multis) {
-            if (multi.expire < Date.now()) {
+            if (multi.expire < Date.now() || multi.multi <= 0) {
                 const result = await delMulti(userId, multi.name, t)
                 if (result.error) {
-                    error = true;
-                    status = result.status;
-                    title = result.title;
-                    desc = result.desc
+                    throw result;
                 }
             } else {
                 total *= multi.multi
@@ -292,6 +289,9 @@ const getMulti = async function (userId, t) {
             content: result.total
         }
     } catch (error) {
+        if (error.error) {
+            return error;
+        }
         // Some error has occured lol
         log.error("A server error has happened while trying to query multipliers.", error)
         return {
@@ -305,8 +305,86 @@ const getMulti = async function (userId, t) {
     }
 }
 
+/**
+ * Gets multiplier details for a user.
+ * @param {String} userId
+ * @param {Transaction} t
+ * @returns
+ */
+const getMultiDetails = async function (userId, t) {
+    const fetchDetails = async function (t) {
+        const records = await multi.findAll({
+            where: {
+                userId: userId
+            },
+            transaction: t
+        });
+
+        let total = 1;
+        const activeRecords = [];
+
+        for (const record of records) {
+
+            if (record.multi > 0 && record.expire > Date.now()) {
+                total *= record.multi;
+                activeRecords.push(record);
+            } else {
+                const result = await delMulti(userId, record.name, t)
+                if (result.error) {
+                    throw result;
+                }
+            }
+        }
+
+        return {
+            total,
+            records: activeRecords
+        };
+    };
+
+    if (t) {
+        const content = await fetchDetails(t);
+
+        return {
+            error: false,
+            status: 200,
+            title: "Multiplier Details",
+            desc: `Multiplier details for ${userId}.`,
+            content
+        };
+    }
+
+    try {
+        const content = await currency.transaction(async t => {
+            return await fetchDetails(t);
+        });
+
+        return {
+            error: false,
+            status: 200,
+            title: "Multiplier Details",
+            desc: `Multiplier details for ${userId}.`,
+            content
+        };
+    } catch (error) {
+        if (error.error) {
+            return error;
+        }
+        log.error("Failed to query multiplier details.", error);
+
+        return {
+            error: true,
+            status: 500,
+            title: "Server Error",
+            desc: "Could not retrieve multiplier details.",
+            content: null
+        };
+    }
+};
+
 module.exports = {
     addMulti,
     delMulti,
     getMulti,
+    getMultiDetails,
 }

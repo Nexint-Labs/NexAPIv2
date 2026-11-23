@@ -12,6 +12,8 @@ The wider Nexint TOS (https://nexint.ca/tos) does not apply towards the Nexint A
 
 ## Disclosures
 
+This program's development was sped up with AI, however I primarily used it for pentesting and migrations.
+
 Previous implementations of the Nexint API (https://github.com/Nexint-Labs/NexAPI) have used AI in the past. You have been warned.
 
 This program is a heavy WIP and is actively being modernized. This program is not expected to be finished for years.

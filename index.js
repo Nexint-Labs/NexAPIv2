@@ -2,6 +2,10 @@ console.log("Importing logging. If this goes wrong, you're cooked.")
 
 // Import the .env lol
 const env = require('dotenv').config({ path: __dirname + '/.env' });
+const { logFormat } = require('#config/core/log');
+if (!process.env.PRISM_LOG_FORMAT) {
+    process.env.PRISM_LOG_FORMAT = logFormat
+}
 const { log } = require('#functions/core/log.mjs');
 
 log.event("Loading configs... If this bot stops here, something went seriously wrong!")
@@ -93,7 +97,7 @@ process.on("unhandledRejection", async (error, origin) => {
 
 const init = async function () {
 
-    log.event("Initializing...")
+    log.event("Starting...")
     if (env.error) {
         await log.fatal("No .env file exists. Please make it!", env.error, 0x0000, true);
         process.exit(1); // this shouldnt run but i have it
@@ -106,8 +110,6 @@ const init = async function () {
         await log.fatal("Could not set the directory.", error, 0x0000, true);
         process.exit(1); // this shouldnt run but i have it
     };
-
-    log.info("Starting Server");
 
     // Make sure directories exist lol
     const fs = require('node:fs');

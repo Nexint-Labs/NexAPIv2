@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const { token } = require("#config/core/api");
 const { app } = require("#apps/web");
 const { getOptOut, addOptOut, delOptOut } = require("#functions/dbs/optOut/optOutUser");
+const { authReq } = require("#functions/api/auth");
 const router = express.Router()
 const jsonParser = bodyParser.json()
 

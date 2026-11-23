@@ -3,6 +3,7 @@ const { items, currency } = require("#preload/db/currency");
 const { Transaction } = require("sequelize");
 const { log } = require("#functions/core/log.mjs");
 const { getOptOut } = require("../optOut/optOutUser");
+const { queryItemNameId } = require("./core/queryItems");
 
 /**
  * Query or add an item.
@@ -32,7 +33,20 @@ const addItem = async function (userId, name, t) {
         };
     }
 
-    const createItem = async function (userId, t) {
+    const createItem = async function (userId, name, t) {
+        const item = await queryItemNameId(name);
+
+        if (!item) {
+            return {
+                error: true,
+                status: 404,
+                title: "Invalid Item",
+                desc: `${name} does not exist.`,
+                content: null
+            };
+        }
+
+        name = String(item.id);
 
         // idk why im using find or create :sob:
         let [user, created] = await items.findOrCreate({
@@ -52,7 +66,13 @@ const addItem = async function (userId, name, t) {
 
     // Transaction safety, outside try-catch because I want errors to propagate :)
     if (t) {
-        let [user, created] = await createItem(userId, t)
+        const result = await createItem(userId, name, t);
+
+        if (result.error) {
+            return result;
+        }
+
+        const [user, created] = result;
         if (!created) {
             return {
                 error: false,
@@ -74,12 +94,15 @@ const addItem = async function (userId, name, t) {
     try {
 
         // Try to create the item
-        const [result, created] = await currency.transaction(async t => {
-
-            let [user, created] = await createItem(userId, t)
-
-            return [user, created];
+        const result = await currency.transaction(async t => {
+            return await createItem(userId, name, t);
         });
+
+        if (result.error) {
+            return result;
+        }
+
+        const [user, created] = result;
 
         if (!created) {
             return {
@@ -87,7 +110,7 @@ const addItem = async function (userId, name, t) {
                 status: 200,
                 title: "Already created.",
                 desc: `${name} is already registered.`,
-                content: result,
+                content: user,
             };
         }
         return {
@@ -95,7 +118,7 @@ const addItem = async function (userId, name, t) {
             status: 201,
             title: "Created Item.",
             desc: `${name} is now registered.`,
-            content: result,
+            content: user,
         }
     } catch (error) {
 
@@ -120,6 +143,19 @@ const addItem = async function (userId, name, t) {
 const delItem = async function (userId, name) {
     try {
         const result = await currency.transaction(async t => {
+            const item = await queryItemNameId(name);
+
+            if (!item) {
+                return {
+                    error: true,
+                    status: 404,
+                    title: "Invalid Item",
+                    desc: `${name} does not exist.`,
+                    content: null
+                };
+            }
+
+            name = String(item.id);
 
             const rowCount = await items.destroy({
                 where: {
@@ -357,9 +393,121 @@ const updateItem = async function (userId, name, amount, t, forced, required) {
     }
 }
 
+/**
+ * Query item
+ * @param {String} userId 
+ * @param {String} itemId 
+ * @param {Transaction} t
+ * @returns 
+ */
+const queryItem = async function (userId, itemId, t) {
+    const optOut = await getOptOut(userId);
+    if (optOut.content === true) {
+        return {
+            error: true,
+            status: 410,
+            title: "Opted out.",
+            desc: `${userId} is opted out.`,
+            content: null,
+        };
+    } else if (optOut.content === null) {
+        return {
+            error: optOut.error,
+            status: optOut.status,
+            title: optOut.title,
+            desc: optOut.desc,
+            content: null,
+        };
+    }
+
+    const findItem = async function (userId, t) {
+        const item = await queryItemNameId(itemId);
+
+        if (!item) {
+            return null;
+        }
+
+        const name = String(item.id);
+
+        const user = await items.findOne({
+            where: {
+                userId: userId,
+                name: name,
+            },
+            transaction: t
+        })
+
+        return {
+            user, 
+            name:item.name
+        }
+    }
+
+    // Transaction safety, outside try-catch because I want errors to propagate :)
+    if (t) {
+        const user = await findItem(userId, t)
+        if (!user || !user.user) {
+            return {
+                error: true,
+                status: 404,
+                title: "Item does not exist.",
+                desc: `${userId} does not have ${itemId}.`,
+                content: null,
+            };
+        }
+        return {
+            error: false,
+            status: 200,
+            title: "Found Item.",
+            desc: `${userId} has ${itemId}.`,
+            content: user,
+        }
+    }
+
+    try {
+
+        // Query the item
+        const result = await currency.transaction(async t => {
+
+            let result = await findItem(userId, t)
+
+            return result;
+        });
+
+        if (!result || !result.user) {
+            return {
+                error: true,
+                status: 404,
+                title: "Item does not exist.",
+                desc: `${userId} does not have ${itemId}.`,
+                content: null,
+            };
+        }
+        return {
+            error: false,
+            status: 200,
+            title: "Found Item.",
+            desc: `${userId} has ${itemId}.`,
+            content: result,
+        }
+    } catch (error) {
+
+        // Some serious error has occured.
+        log.error("A server error has happened while trying to find an item.", error)
+        return {
+            error: true,
+            status: 500,
+            title: "Server Error",
+            desc: "The server in question has faced a serious server error.",
+            content: null
+        }
+    }
+}
+
 module.exports = {
     addItem,
     delItem,
     getItems,
-    updateItem
+    updateItem,
+    queryItem
 }

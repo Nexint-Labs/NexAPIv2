@@ -26,7 +26,7 @@ const gracefulShutdown = async function (cause, exit) {
     shutDownState = true;
     log.info(`\x1b[36m--------------------- Nex ${date.getFullYear()} ---------------------\x1b[0m`)
     log.event(`Shutdown triggered by: ${cause}`)
-    log.info("Closing all apps...")
+    log.event("Closing all apps...")
 
     try {
         let success = true;
@@ -39,13 +39,13 @@ const gracefulShutdown = async function (cause, exit) {
         if (!success) {
             log.error("One or more components failed to close.");
         } else {
-            log.info("All components closed successfully.");
+            log.event("All components closed successfully.");
         }
     } catch (error) {
         log.error("Prism could not be force shut down properly.", error)
         process.exit(1);
     } finally {
-        log.info("Shutting down.")
+        log.event("Shutting down.")
         log.info(`\x1b[36m----------------------------------------------------\x1b[0m`)
         shutDownState = false;
         if (exit) {

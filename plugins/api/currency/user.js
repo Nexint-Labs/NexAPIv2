@@ -8,8 +8,13 @@ const bodyParser = require('body-parser');
 const { app } = require("#apps/web");
 const { getBalance, addBalance, delBalance } = require("#functions/dbs/currency/handleBalance");
 const { getBank, addBank } = require("#functions/dbs/currency/handleBank");
-const { getJob } = require("#functions/dbs/currency/handleJobs");
+const { getJob, queryJob, queryJobList } = require("#functions/dbs/currency/handleJobs");
 const { authReq } = require("#functions/api/auth");
+const { getMulti } = require("#functions/dbs/currency/handleMulti");
+const { addMisc } = require("#functions/dbs/currency/handleMisc");
+const { getItems } = require("#functions/dbs/currency/handleItems");
+const { queryJobInfo } = require("#functions/dbs/currency/conv/job");
+const { queryItemNameId } = require("#functions/dbs/currency/core/queryItems");
 const router = express.Router()
 const jsonParser = bodyParser.json()
 
@@ -100,6 +105,10 @@ router.post('/', jsonParser, async (req, res) => {
 
     const balance = await addBalance(userId, name);
     const bank = await addBank(userId, name);
+    const job = await queryJob(userId);
+    const multi = await getMulti(userId);
+    const misc = await addMisc(userId, name);
+    const inv = await getItems(userId);
 
     if (balance.error) {
         res.status(balance.status).json(balance)
@@ -109,13 +118,51 @@ router.post('/', jsonParser, async (req, res) => {
         res.status(bank.status).json(bank)
         return;
     }
+    if (job.error && job.status !== 404) {
+        res.status(job.status).json(job)
+        return;
+    }
+    if (multi.error) {
+        res.status(multi.status).json(multi)
+        return;
+    }
+    if (misc.error) {
+        res.status(misc.status).json(misc)
+        return;
+    }
+    if (inv.error) {
+        res.status(inv.status).json(inv)
+        return;
+    }
+    let jobInfo = {
+        content: null
+    };
+    if (!job.error) {
+        jobInfo = await queryJobInfo(job.content.jobId);
+    }
+
+
+    let itemNetWorth = 0;
+
+    for (const record of inv.content) {
+        const item = await queryItemNameId(record.name);
+
+        if (item !== undefined) {
+            itemNetWorth += item.value * record.value;
+        }
+    }
     res.status(200).json({
         error: false,
         desc: "User Info (Balance)",
         content: {
             balance: balance.content,
             bank: bank.content,
-
+            job: job.content,
+            multi: multi.content,
+            misc: misc.content,
+            inv: inv.content,
+            jobInfo: jobInfo.content,
+            itemNetWorth: itemNetWorth
         },
     })
     return;

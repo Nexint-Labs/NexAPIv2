@@ -74,7 +74,7 @@ router.post('/', jsonParser, async (req, res) => {
         return;
     }
 
-    const result = await updateBalance(userId, name, amount, false, false, required)
+    const result = await updateBalance(userId, name, amount, undefined, false, required);
     res.status(result.status).json(result)
     return;
 })

@@ -7,11 +7,11 @@ module.exports = {
         minute: "numeric",
         second: "numeric",
     },
-    verbose: true, // Extra Logging Info
+    verbose: false, // Extra Logging Info
     autoUpdate: true,
     frameName: "Prism", // Unified Framework Name
     frameVer: "0.7.1-dev", // Unified Framework version
-    frameID: 16, // Framework version ID
+    frameID: 17, // Framework version ID
     updateURL: "https://github.com/Nexint-Labs/NexAPIv2/",
     updateSource: "https://raw.githubusercontent.com/Nexint-Labs/NexAPIv2/refs/heads/main/ver.txt",
 

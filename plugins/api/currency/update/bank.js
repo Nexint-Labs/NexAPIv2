@@ -7,6 +7,7 @@ const { currency } = require("#preload/db/currency");
 const { getOptOut } = require("#functions/dbs/optOut/optOutUser");
 const { updateBank, addBank } = require("#functions/dbs/currency/handleBank");
 const { log } = require("#functions/core/log.mjs");
+const { consumeBanknotes } = require("#functions/dbs/currency/consumables/consumeBanknotes");
 const router = express.Router()
 const jsonParser = bodyParser.json()
 
@@ -112,15 +113,11 @@ router.post('/deposit', jsonParser, async (req, res) => {
         const result = await currency.transaction(async t => {
             const result = await updateBalance(userId, name, -amount, t)
             if (result.error) {
-                throw Object.assign(new Error(result.title), {
-                    result: result
-                });
+                throw result
             }
             const bankResult = await updateBank(userId, name, amount, t)
             if (bankResult.error) {
-                throw Object.assign(new Error(bankResult.title), {
-                    result: bankResult
-                });
+                throw bankResult
             }
             return {
                 error: false,
@@ -136,8 +133,8 @@ router.post('/deposit', jsonParser, async (req, res) => {
         res.status(result.status).json(result)
 
     } catch (error) {
-        if (error.result) {
-            return res.status(error.result.status).json(error.result);
+        if (error.error) {
+            return res.status(error.status).json(error);
         }
 
         log.error("Deposit failed:", error);
@@ -210,15 +207,11 @@ router.post('/withdraw', jsonParser, async (req, res) => {
         const result = await currency.transaction(async t => {
             const bankResult = await updateBank(userId, name, -amount, t)
             if (bankResult.error) {
-                throw Object.assign(new Error(bankResult.title), {
-                    result: bankResult
-                });
+                throw bankResult
             }
             const result = await updateBalance(userId, name, amount, t)
             if (result.error) {
-                throw Object.assign(new Error(result.title), {
-                    result: result
-                });
+                throw result
             }
             return {
                 error: false,
@@ -234,8 +227,8 @@ router.post('/withdraw', jsonParser, async (req, res) => {
         res.status(result.status).json(result)
 
     } catch (error) {
-        if (error.result) {
-            return res.status(error.result.status).json(error.result);
+        if (error.error) {
+            return res.status(error.status).json(error);
         }
 
         log.error("Withdraw failed:", error);
@@ -250,6 +243,25 @@ router.post('/withdraw', jsonParser, async (req, res) => {
     }
     return;
 })
+
+// Consume banknotes
+router.post('/consume', jsonParser, async (req, res) => {
+    if (!authReq(req, res)) return;
+
+    const { userId, qty } = req.body;
+    if (!userId || qty === undefined) {
+        return res.status(400).json({
+            error: true,
+            status: 400,
+            title: "Malformed Request",
+            desc: "Missing userId or qty.",
+            content: null
+        });
+    }
+
+    const result = await consumeBanknotes(userId, qty);
+    return res.status(result.status).json(result);
+});
 
 router.mountPath = '/currency/update/bank';
 
