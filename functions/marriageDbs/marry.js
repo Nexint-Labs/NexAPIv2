@@ -25,13 +25,13 @@ const createMarriage = async function (id1, id2, transaction = null) {
         }
     }
 
-    const optOut = await getOptOut(userId);
+    const optOut = await getOptOut(id1, id2);
     if (optOut.content === true) {
         return {
             error: true,
             status: 410,
             title: "Opted out.",
-            desc: `${userId} is opted out.`,
+            desc: `Someone is opted out.`,
             content: null,
         };
     } else if (optOut.content === null) {
