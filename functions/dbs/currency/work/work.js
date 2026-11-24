@@ -104,10 +104,10 @@ const work = async function (userId, name) {
             if (job.workCount % jobs[job.jobId].promo == 0) {
                 const oldWage = Number(job.wage);
 
-                newWage = Math.ceil(oldWage + jobs[job.jobId].promoAmount) * ((Math.random() * 0.4) + 0.8);
+                newWage = Math.ceil(oldWage + (jobs[job.jobId].promoAmount) * ((Math.random() * 0.4) + 0.8));
 
                 if (newWage >= softEcoCap) {
-                    newWage = Math.ceil(oldWage + jobs[job.jobId].promoAmount) * ((Math.random() * 0.01) + 0.005);
+                    newWage = Math.ceil(oldWage + (jobs[job.jobId].promoAmount) * ((Math.random() * 0.01) + 0.005));
                 }
 
                 raise = newWage - oldWage;
