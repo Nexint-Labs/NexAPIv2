@@ -20,6 +20,7 @@ router.get("/", (req, res) => {
 
 router.post("/buy", express.json(), async (req, res) => {
 
+    // Authenticate
     if (!authReq(req, res)) return;
 
     // Get the request

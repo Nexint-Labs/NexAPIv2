@@ -1,6 +1,5 @@
 const express = require("express");
 const bodyParser = require('body-parser');
-const { token } = require("#config/core/api");
 const { app } = require("#apps/web");
 const { getOptOut, addOptOut, delOptOut } = require("#functions/dbs/optOut/optOutUser");
 const { authReq } = require("#functions/api/auth");
@@ -78,18 +77,11 @@ router.post('/', jsonParser, async (req, res) => {
 
 router.delete('/', jsonParser, async (req, res) => {
 
+    // Authenticate
+    if (!authReq(req, res)) return;
+
     // Get the request
     let request = req.body;
-
-    // Authenticate?
-    if (request.token != token) {
-        res.status(403).json({
-            error: "Insufficient Permissions",
-            desc: "You are not authenticated",
-            content: null,
-        });
-        return;
-    }
 
     // See if the user ID even exists
     const { userId } = request;
