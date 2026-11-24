@@ -318,6 +318,16 @@ module.exports = {
             id: 105,
         },
         {
+            name: "Kasane Teto",
+            desc: "You will never get this.",
+            value: 1000000000000,
+            available: true,
+            effects: {
+                consumable: false,
+            },
+            id: 106,
+        },
+        {
             name: "Lootbox 1",
             desc: "Open this lootbox to see whats inside!",
             value: 100000,
@@ -346,7 +356,17 @@ module.exports = {
                 consumable: false,
             },
             id: 10000,
-        }
+        },
+        {
+            name: "Nexint",
+            desc: "Secret Item.",
+            value: 0,
+            available: false,
+            effects: {
+                consumable: false,
+            },
+            id: 1000000, // 1M for secret items
+        },
     ],
     choiceCount: 3, // how many job choices in /apply command
     expChance: 0.5, // exp gain chance (0 - 1)
