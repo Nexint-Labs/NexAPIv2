@@ -64,7 +64,7 @@ const getOptOut = async function (userId, secondId = null) {
 }
 
 /**
- * Opts out a user and DELETES ALL INFO ASSOCIATED HELP
+ * Opts out a user and DELETES ALL INFO ASSOCIATED HELP (tries*)
  * @param {String} userId 
  * @returns 
  */
@@ -86,11 +86,12 @@ const addOptOut = async function (userId, name) {
             // Update the notification lol
             const { delBalance } = require("../currency/handleBalance");
             const { delBank } = require("../currency/handleBank");
-            const { delNotif } = require("../notif/notifUser");
             const { delMisc } = require("../currency/handleMisc");
-            const { delAction } = require("../action/handleAction");
+            const { delItem } = require("../currency/handleItems");
             const { delJob } = require("../currency/handleJobs");
             const { delMulti } = require("../currency/handleMulti");
+            const { delNotif } = require("../notif/notifUser");
+            const { delAction } = require("../action/handleAction");
 
             const delCurrency = async function (userId, name) {
                 const result = await currency.transaction(async t => {
@@ -113,7 +114,8 @@ const addOptOut = async function (userId, name) {
                 await delBank(userId, name),
                 await delMisc(userId, name),
                 await delAction(userId),
-                await delCurrency(userId, name)
+                await delCurrency(userId, name),
+                await delItem(userId, name)
             ];
 
             for (const result of results) {
