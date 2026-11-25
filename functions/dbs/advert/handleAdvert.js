@@ -1,4 +1,6 @@
-const { frameName } = require("#config/core/core");
+
+const { frameName } = require("@nexint/lumina/framework")
+const { getConfig } = require("#functions/core/getConfig");
 const { analytics, advert } = require("#preload/db/analytics");
 const { log } = require("#functions/core/log.mjs");
 
