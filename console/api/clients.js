@@ -1,6 +1,7 @@
 const { wss } = require('#apps/web');
-const { frameName, frameVer, frameID } = require('#config/core/core');
-const { pluginName, pluginVer } = require('#config/cosmetic/config');
+const { frameName, frameVer, frameID } = require("@nexint/lumina/framework")
+const { getConfig } = require("#functions/core/getConfig");
+const { pluginName, pluginVer } = getConfig("cosmetic/config");
 const { date } = require('#functions/core/date');
 const { log } = require('#functions/core/log.mjs');
 const WebSocket = require("ws");
