@@ -51,8 +51,21 @@ const work = async function (userId, name) {
             }
 
             const job = findJob.content
+            const jobConfig = jobs[job.jobId];
 
-            if (Number(job.lastWorked) + jobs[job.jobId].maxDays * 86400 < Math.floor(Date.now() / 1000)) {
+            if (!jobConfig) {
+                log.warn(`Invalid job ID: ${job.jobId} for user ${userId}`);
+
+                return {
+                    error: true,
+                    status: 409,
+                    title: "Invalid Job",
+                    desc: "Your current job is no longer valid.",
+                    content: null
+                };
+            }
+
+            if (Number(job.lastWorked) + jobConfig.maxDays * 86400 < Math.floor(Date.now() / 1000)) {
                 const deleted = await delJob(userId, name, t)
 
                 if (deleted.error) return deleted;
@@ -101,13 +114,13 @@ const work = async function (userId, name) {
             let newWage = 0;
             let raise = 0
 
-            if (job.workCount % jobs[job.jobId].promo == 0) {
+            if (job.workCount % jobConfig.promo == 0) {
                 const oldWage = Number(job.wage);
 
-                newWage = Math.ceil(oldWage + (jobs[job.jobId].promoAmount) * ((Math.random() * 0.4) + 0.8));
+                newWage = Math.ceil(oldWage + (jobConfig.promoAmount) * ((Math.random() * 0.4) + 0.8));
 
                 if (newWage >= softEcoCap) {
-                    newWage = Math.ceil(oldWage + (jobs[job.jobId].promoAmount) * ((Math.random() * 0.01) + 0.005));
+                    newWage = Math.ceil(oldWage + (jobConfig.promoAmount) * ((Math.random() * 0.01) + 0.005));
                 }
 
                 raise = newWage - oldWage;
