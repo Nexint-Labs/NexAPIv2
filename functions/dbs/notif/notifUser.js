@@ -139,7 +139,7 @@ const delNotif = async function (userId) {
             if (!rowCount) {
                 return {
                     error: true,
-                    status: 410,
+                    status: 404,
                     title: "Gone",
                     desc: `${userId} is already gone.`,
                     content: {
